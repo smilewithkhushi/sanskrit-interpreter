@@ -1,0 +1,10 @@
+# English spellings work alongside Sanskrit words and Go-style :=.
+func square(n):
+    return n * n
+
+values := []
+for n in range(1, 5):
+    values = append(values, square(n))
+
+print("Squares:", values)
+print("Sum:", sum(values))

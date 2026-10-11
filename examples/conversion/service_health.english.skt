@@ -1,0 +1,21 @@
+# Report service availability in basis points (10000 = 100.00%).
+# Invalid or empty samples are reported separately from unhealthy services.
+func availability_bps(healthy, total):
+    if total <= 0 or healthy < 0 or healthy > total:
+        return None
+    return healthy * 10000 // total
+
+samples := [
+    {"service": "api", "healthy": 998, "total": 1000},
+    {"service": "worker", "healthy": 970, "total": 1000},
+    {"service": "scheduler", "healthy": 0, "total": 0},
+]
+
+for sample in samples:
+    score := availability_bps(sample["healthy"], sample["total"])
+    if score is None:
+        print(sample["service"], "no valid sample")
+    elif score < 9950:
+        print(sample["service"], "alert", score, "bps")
+    else:
+        print(sample["service"], "healthy", score, "bps")

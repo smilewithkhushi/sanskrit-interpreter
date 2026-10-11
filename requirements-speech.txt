@@ -1,0 +1,2 @@
+# Optional local speech-to-text support for the browser REPL.
+faster-whisper>=1.1,<2

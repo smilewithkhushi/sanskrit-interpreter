@@ -1,0 +1,18 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# VS Code extension dependencies and generated packages
+node_modules/
+*.vsix
+
+# Packaged interpreter
+dist/
+
+/self/*

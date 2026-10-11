@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>संस्कृत REPL</title>
+<style>
+  :root { font-family: system-ui, sans-serif; color: #eee9dc; background: #151b27; }
+  body { max-width: 920px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { margin-bottom: .2rem; color: #f0c96d; }
+  p { line-height: 1.5; color: #c4c5ce; }
+  textarea, pre { width: 100%; box-sizing: border-box; padding: 1rem; border: 1px solid #495164; border-radius: 10px; background: #202839; color: #f7f5ee; font: 1rem/1.5 ui-monospace, monospace; }
+  .editor { position: relative; }
+  .editor pre, .editor textarea { margin: 0; min-height: 220px; white-space: pre; overflow: auto; tab-size: 4; }
+  .editor pre { position: absolute; inset: 0; height: 100%; pointer-events: none; }
+  .editor textarea { position: relative; height: 220px; resize: vertical; background: transparent; color: transparent; caret-color: #f7f5ee; }
+  .editor textarea::selection { background: #5576a0aa; }
+  .token-keyword { color: #c9a7ff; }
+  .token-command { color: #ffbd82; }
+  .token-function { color: #8fd1ff; }
+  .token-builtin { color: #83dfc0; }
+  .token-constant, .token-number { color: #f2c87b; }
+  .token-string { color: #a9d988; }
+  .token-comment { color: #8994a8; }
+  .token-operator { color: #f3a7be; }
+  #output { min-height: 100px; white-space: pre-wrap; }
+  button, select { padding: .65rem .9rem; border: 0; border-radius: 8px; font: inherit; }
+  button { background: #f0c96d; color: #1a1b22; cursor: pointer; margin: .35rem .3rem .35rem 0; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .secondary { background: #353e51; color: white; }
+  .error { color: #ff9e9e; }
+  code { color: #f0c96d; }
+</style>
+<h1>संस्कृत REPL</h1>
+<p>Write Sanskrit-inspired code, or dictate it and edit the transcript before running. Your variables persist between runs.</p>
+<div class="editor">
+  <pre id="highlight" aria-hidden="true"></pre>
+  <textarea id="source" aria-label="Sanskrit source code" spellcheck="false" wrap="off">संख्या := [1, 2, 3, 4]
+मुद्रय("योग =", योग(संख्या))</textarea>
+</div>
+<div>
+  <button id="run">Run code</button>
+  <button id="voice" class="secondary">🎙 Browser dictate</button>
+  <button id="local-voice" class="secondary" disabled>🎤 Record locally</button>
+  <button id="upload-audio" class="secondary" disabled>Transcribe audio file</button>
+  <input id="audio-file" type="file" accept="audio/*" hidden>
+  <select id="language" aria-label="Speech language"><option value="hi-IN">Hindi / Sanskrit words</option><option value="sa-IN">Sanskrit</option><option value="en-IN">English</option></select>
+  <button id="reset" class="secondary">Reset state</button>
+</div>
+<p id="speech-help">Checking local transcription…</p>
+<p id="status" role="status"></p>
+<pre id="output" aria-live="polite"></pre>
+<p>Try <code>कार्य वर्ग(n):</code> then an indented <code>प्रत्यावर्तय n * n</code>. Use <code>यदि</code>, <code>अन्यथा</code>, <code>यावत्</code>, <code>प्रत्येक</code>, and <code>मध्ये</code> for control flow.</p>
+<script>
+const $ = id => document.getElementById(id);
+const keywords = new Set('यदि अन्ययदि अन्यथा यावत् प्रत्येक मध्ये कार्य प्रत्यावर्तय विराम अग्रे च वा न स्थापय if elif else while for in def func return break continue pass and or not let'.split(' '));
+const constants = new Set('सत्यम् असत्यम् शून्यम् True False None true false nil'.split(' '));
+const builtins = new Set('मुद्रय लम्बाई परास योग न्यूनतम अधिकतम क्रम उलट सूची कोश समुच्चय गणना युग्म पूर्णांक दशमलव अक्षर बूल निरपेक्ष सर्व कोई बनाओ जोड़ो क्षमता प्रतिलिपि वर्गमूल print len range sum min max sorted reversed list dict set enumerate zip int float str bool abs all any make append cap copy sqrt'.split(' '));
+const commands = new Set('गणय दर्शय calculate show'.split(' '));
+const identifier = /[\p{L}_][\p{L}\p{M}\p{N}_]*/uy;
+const number = /(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|(?:[0-9][0-9_]*(?:\.[0-9_]*)?|\.[0-9][0-9_]*)(?:[eE][+-]?[0-9][0-9_]*)?)/y;
+const operator = /(?:\*\*|\/\/|:=|==|!=|<=|>=|\+=|-=|\*=|\/=|%=|[=<>+*\/%-])/y;
+
+function highlight(source) {
+  const layer = $('highlight');
+  const fragment = document.createDocumentFragment();
+  let i = 0;
+  let lineStart = true;
+  let declaration = false;
+  function add(value, kind) {
+    if (kind) {
+      const span = document.createElement('span');
+      span.className = 'token-' + kind;
+      span.textContent = value;
+      fragment.append(span);
+    } else {
+      fragment.append(document.createTextNode(value));
+    }
+    const lastNewline = value.lastIndexOf('\n');
+    if (lastNewline >= 0) lineStart = /^\s*$/.test(value.slice(lastNewline + 1));
+    else if (/\S/.test(value)) lineStart = false;
+  }
+  while (i < source.length) {
+    const start = i;
+    const char = source[i];
+    if (char === '#') {
+      i = source.indexOf('\n', i);
+      if (i < 0) i = source.length;
+      add(source.slice(start, i), 'comment');
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      const quote = source.startsWith(char.repeat(3), i) ? char.repeat(3) : char;
+      i += quote.length;
+      while (i < source.length) {
+        if (source[i] === '\\') i = Math.min(i + 2, source.length);
+        else if (source.startsWith(quote, i)) { i += quote.length; break; }
+        else i++;
+      }
+      add(source.slice(start, i), 'string');
+      continue;
+    }
+    identifier.lastIndex = i;
+    const word = identifier.exec(source);
+    if (word) {
+      i = identifier.lastIndex;
+      const value = word[0];
+      const kind = lineStart && commands.has(value) && /\s/.test(source[i] || '') ? 'command'
+        : keywords.has(value) ? 'keyword'
+        : constants.has(value) ? 'constant'
+        : declaration ? 'function'
+        : builtins.has(value) ? 'builtin' : null;
+      add(value, kind);
+      declaration = value === 'कार्य' || value === 'func' || value === 'def';
+      continue;
+    }
+    number.lastIndex = i;
+    const numeric = number.exec(source);
+    if (numeric && (i === 0 || !/[\p{L}\p{M}\p{N}_]/u.test(source[i - 1])) && !/[\p{L}\p{M}\p{N}_]/u.test(source[number.lastIndex] || '')) {
+      i = number.lastIndex;
+      add(numeric[0], 'number');
+      declaration = false;
+      continue;
+    }
+    operator.lastIndex = i;
+    const symbol = operator.exec(source);
+    if (symbol) {
+      i = operator.lastIndex;
+      add(symbol[0], 'operator');
+      declaration = false;
+      continue;
+    }
+    i++;
+    add(char);
+    if (!/\s/.test(char)) declaration = false;
+    if (char === '\n') declaration = false;
+  }
+  // A final empty line needs a glyph to retain its height in the mirror.
+  if (source.endsWith('\n')) fragment.append(document.createTextNode(' '));
+  layer.replaceChildren(fragment);
+}
+const source = $('source');
+source.addEventListener('input', () => highlight(source.value));
+source.addEventListener('scroll', () => {
+  $('highlight').scrollTop = source.scrollTop;
+  $('highlight').scrollLeft = source.scrollLeft;
+});
+highlight(source.value);
+if (location.protocol === 'file:') {
+  $('status').textContent = 'This file is the interface only. Start the interpreter with “Start Sanskrit REPL.command”, then use http://127.0.0.1:8765/.';
+  $('output').textContent = 'The interpreter is not running on this file page.';
+  $('run').disabled = true;
+  $('reset').disabled = true;
+  $('voice').disabled = true;
+  $('speech-help').textContent = 'Start the local server to use audio input.';
+}
+async function request(payload) {
+  if (location.protocol === 'file:') return;
+  try {
+    const response = await fetch('/run', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    const data = await response.json();
+    $('output').textContent = data.output + (data.error ? '\nत्रुटि: ' + data.error : '');
+    $('output').classList.toggle('error', !!data.error);
+  } catch (error) {
+    $('output').textContent = 'Cannot reach the interpreter. Start “Start Sanskrit REPL.command” and open http://127.0.0.1:8765/.';
+    $('output').classList.add('error');
+  }
+}
+$('run').onclick = () => request({source:$('source').value});
+$('reset').onclick = () => request({reset:true});
+function insertTranscript(transcript) {
+  const box = $('source');
+  const start = box.selectionStart;
+  const prefix = start > 0 && !/\s$/.test(box.value.slice(0, start)) ? '\n' : '';
+  box.setRangeText(prefix + transcript.trim(), start, box.selectionEnd, 'end');
+  box.dispatchEvent(new Event('input', {bubbles: true}));
+  box.focus();
+}
+
+async function transcribeAudio(blob) {
+  if (!blob.size) { $('status').textContent = 'No audio was recorded.'; return; }
+  if (blob.size > 10 * 1024 * 1024) { $('status').textContent = 'Audio is too large; use a file under 10 MB.'; return; }
+  $('local-voice').disabled = true;
+  $('upload-audio').disabled = true;
+  $('status').textContent = 'Transcribing locally… The first run may download the speech model.';
+  try {
+    const response = await fetch('/transcribe', {
+      method: 'POST',
+      headers: {'Content-Type': blob.type || 'audio/webm', 'X-Speech-Language': $('language').value},
+      body: blob
+    });
+    const data = await response.json();
+    if (!response.ok || data.error) throw new Error(data.error || 'Transcription failed');
+    if (!data.text.trim()) throw new Error('No speech was recognized. Try a clearer or longer clip.');
+    insertTranscript(data.text);
+    $('status').textContent = 'Transcript added to the editor. Review the syntax before running.';
+  } catch (error) {
+    $('status').textContent = 'Audio input: ' + error.message;
+  } finally {
+    $('local-voice').disabled = false;
+    $('upload-audio').disabled = false;
+  }
+}
+
+let recorder = null;
+let recordingTimer = null;
+function stopRecording() {
+  if (recorder?.state === 'recording') {
+    $('local-voice').disabled = true;
+    recorder.stop();
+  }
+}
+$('local-voice').onclick = async () => {
+  if (recorder && recorder.state === 'recording') {
+    stopRecording();
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    $('status').textContent = 'This browser cannot record microphone audio.';
+    return;
+  }
+  let stream;
+  $('local-voice').disabled = true;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    const chunks = [];
+    const preferred = ['audio/webm', 'audio/mp4', 'audio/ogg'].find(type => MediaRecorder.isTypeSupported(type));
+    const currentRecorder = new MediaRecorder(stream, preferred ? {mimeType: preferred} : undefined);
+    recorder = currentRecorder;
+    currentRecorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+    currentRecorder.onstop = () => {
+      clearTimeout(recordingTimer);
+      stream.getTracks().forEach(track => track.stop());
+      const audio = new Blob(chunks, {type: currentRecorder.mimeType});
+      recorder = null;
+      $('local-voice').textContent = '🎤 Record locally';
+      if (!audio.size) {
+        $('local-voice').disabled = false;
+        $('upload-audio').disabled = false;
+        $('status').textContent = 'No audio was recorded.';
+        return;
+      }
+      transcribeAudio(audio);
+    };
+    currentRecorder.start();
+    $('local-voice').disabled = false;
+    $('upload-audio').disabled = true;
+    $('local-voice').textContent = '■ Stop recording';
+    $('status').textContent = 'Recording… Click Stop recording when finished (30 seconds maximum).';
+    recordingTimer = setTimeout(stopRecording, 30000);
+  } catch (error) {
+    if (stream) stream.getTracks().forEach(track => track.stop());
+    $('local-voice').disabled = false;
+    $('status').textContent = 'Microphone: ' + error.message;
+  }
+};
+$('upload-audio').onclick = () => $('audio-file').click();
+$('audio-file').onchange = async event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (file) await transcribeAudio(file);
+};
+if (location.protocol !== 'file:') {
+  fetch('/speech/status').then(response => response.json()).then(data => {
+    if (data.available) {
+      $('local-voice').disabled = false;
+      $('upload-audio').disabled = false;
+      $('speech-help').textContent = `Local audio transcription is ready (${data.model} model). Record up to 30 seconds or upload an audio file; review the text before running.`;
+    } else {
+      $('speech-help').textContent = 'For local audio transcription, install requirements-speech.txt and restart the server. Browser dictation may still work.';
+    }
+  }).catch(() => { $('speech-help').textContent = 'Local transcription status is unavailable.'; });
+}
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) { $('voice').disabled = true; $('status').textContent = 'Browser dictation is unavailable. Local audio transcription may still work.'; }
+else {
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  $('voice').onclick = () => { recognition.lang = $('language').value; recognition.start(); $('status').textContent = 'Listening…'; };
+  recognition.onresult = event => {
+    const transcript = event.results[0][0].transcript;
+    insertTranscript(transcript);
+    $('status').textContent = 'Transcript added. Review it, then run.';
+  };
+  recognition.onerror = event => { $('status').textContent = 'Speech input: ' + event.error; };
+  recognition.onend = () => { if ($('status').textContent === 'Listening…') $('status').textContent = 'Stopped listening.'; };
+}
+</script>
+</html>

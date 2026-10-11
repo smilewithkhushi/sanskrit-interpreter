@@ -1,0 +1,18 @@
+# Build a deterministic reorder list from in-memory stock and minimums.
+# A missing stock entry counts as zero units on hand.
+func reorder_report(stock, minimums):
+    report := []
+    for sku in sorted(minimums):
+        on_hand := stock[sku] if sku in stock else 0
+        needed := minimums[sku] - on_hand
+        if needed > 0:
+            report = append(report, {"sku": sku, "quantity": needed})
+    return report
+
+stock := {"A-100": 4, "B-200": 12}
+minimums := {"A-100": 10, "B-200": 8, "C-300": 5}
+reorders := reorder_report(stock, minimums)
+
+for row in reorders:
+    print(row["sku"], "reorder", row["quantity"])
+print("Reorder lines:", len(reorders))

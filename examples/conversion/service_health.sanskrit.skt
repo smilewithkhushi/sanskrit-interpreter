@@ -1,0 +1,21 @@
+# Report service availability in basis points (10000 = 100.00%).
+# Invalid or empty samples are reported separately from unhealthy services.
+कार्य availability_bps(healthy, total):
+    यदि total <= 0 वा healthy < 0 वा healthy > total:
+        प्रत्यावर्तय शून्यम्
+    प्रत्यावर्तय healthy * 10000 // total
+
+samples := [
+    {"service": "api", "healthy": 998, "total": 1000},
+    {"service": "worker", "healthy": 970, "total": 1000},
+    {"service": "scheduler", "healthy": 0, "total": 0},
+]
+
+प्रत्येक sample मध्ये samples:
+    score := availability_bps(sample["healthy"], sample["total"])
+    यदि score is शून्यम्:
+        मुद्रय(sample["service"], "no valid sample")
+    अन्ययदि score < 9950:
+        मुद्रय(sample["service"], "alert", score, "bps")
+    अन्यथा:
+        मुद्रय(sample["service"], "healthy", score, "bps")

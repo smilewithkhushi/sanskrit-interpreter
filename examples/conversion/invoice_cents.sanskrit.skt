@@ -1,0 +1,21 @@
+# Calculate an invoice in integer cents to avoid rounding in money totals.
+# Return None for invalid quantities, prices, or discounts.
+कार्य invoice_total_cents(lines, discount_cents):
+    subtotal := 0
+    प्रत्येक line मध्ये lines:
+        यदि line["quantity"] < 0 वा line["unit_cents"] < 0:
+            प्रत्यावर्तय शून्यम्
+        subtotal += line["quantity"] * line["unit_cents"]
+    यदि discount_cents < 0 वा discount_cents > subtotal:
+        प्रत्यावर्तय शून्यम्
+    प्रत्यावर्तय subtotal - discount_cents
+
+lines := [
+    {"sku": "NOTEBOOK", "quantity": 3, "unit_cents": 1299},
+    {"sku": "PEN", "quantity": 5, "unit_cents": 175},
+]
+total := invoice_total_cents(lines, 250)
+यदि total is शून्यम्:
+    मुद्रय("Invalid invoice")
+अन्यथा:
+    मुद्रय("Invoice total (cents):", total)

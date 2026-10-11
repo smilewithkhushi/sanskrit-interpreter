@@ -1,0 +1,18 @@
+# Build a deterministic reorder list from in-memory stock and minimums.
+# A missing stock entry counts as zero units on hand.
+कार्य reorder_report(stock, minimums):
+    report := []
+    प्रत्येक sku मध्ये क्रम(minimums):
+        on_hand := stock[sku] यदि sku मध्ये stock अन्यथा 0
+        needed := minimums[sku] - on_hand
+        यदि needed > 0:
+            report = जोड़ो(report, {"sku": sku, "quantity": needed})
+    प्रत्यावर्तय report
+
+stock := {"A-100": 4, "B-200": 12}
+minimums := {"A-100": 10, "B-200": 8, "C-300": 5}
+reorders := reorder_report(stock, minimums)
+
+प्रत्येक row मध्ये reorders:
+    मुद्रय(row["sku"], "reorder", row["quantity"])
+मुद्रय("Reorder lines:", लम्बाई(reorders))
