@@ -29,9 +29,6 @@
   .page-header p { max-width: 700px; margin: 0; }
   .example-meta { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .8rem; }
   .pill { padding: .25rem .55rem; border: 1px solid #40516a; border-radius: 999px; color: #aebbd0; font-size: .72rem; }
-  .stepper { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; }
-  .stepper button { padding: .42rem .65rem; font-size: .8rem; }
-  .stepper span { color: #9cabc0; font-size: .8rem; }
   .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .85rem; }
   .library-card { display: flex; min-height: 155px; flex-direction: column; padding: 1.1rem; border: 1px solid #35435a; border-radius: 13px; background: #1b2737; color: inherit; text-decoration: none; }
   .library-card:hover { border-color: #d8b96e; background: #253348; }
@@ -46,6 +43,10 @@
   .scroll-art h2 { margin: .35rem 0; font-size: 1.1rem; }
   .scroll-art p { margin: 0; font-size: .85rem; }
   .scroll-art img { display: block; width: 100%; border: 8px solid white; border-radius: 8px; background: white; }
+  .site-footer { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #35435a; color: #8793a5; font-size: .82rem; text-align: center; }
+  .site-footer a { color: #f5d68a; text-decoration: none; }
+  .site-footer a:hover { text-decoration: underline; }
+  .site-footer a:focus-visible { outline: 2px solid #f0c96d; outline-offset: 3px; }
   .reveal-ready { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
   .reveal-ready.is-visible { opacity: 1; transform: none; }
   h1 { margin: .35rem 0 .7rem; color: #f5d68a; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -.04em; }
@@ -130,7 +131,6 @@
   <h1 id="workspace-title">संस्कृत REPL</h1>
   <p id="workspace-description">Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.</p>
   <div id="example-meta" class="example-meta" hidden></div>
-  <div id="example-stepper" class="stepper" hidden><button id="previous-example" class="secondary" type="button">← Previous</button><span id="example-position"></span><button id="next-example" class="secondary" type="button">Next →</button></div>
 </header>
 <div class="section-heading"><h2>Source editor</h2><span>Write, dictate, then refine</span></div>
 <div class="editor">
@@ -167,7 +167,7 @@
 <p>Try <code>कार्य वर्ग(n):</code> then an indented <code>प्रत्यावर्तय n * n</code>. Use <code>यदि</code>, <code>अन्यथा</code>, <code>यावत्</code>, <code>प्रत्येक</code>, and <code>मध्ये</code> for control flow.</p>
 </section>
 <section id="page-examples" data-page="examples" hidden>
-  <header class="page-header"><div class="page-kicker">Learn by running</div><h1>Example library</h1><p>Open a template to explore its source, make changes, and run it. Choose another from the left pane or use Previous and Next.</p></header>
+  <header class="page-header"><div class="page-kicker">Learn by running</div><h1>Example library</h1><p>Open a template to explore its source, make changes, and run it. Choose another from the left pane.</p></header>
   <div id="library-grid" class="library-grid"></div>
 </section>
 <section id="page-guide" data-page="guide" hidden>
@@ -182,6 +182,7 @@
   <div><div class="page-kicker">Explore more</div><h2>Sanskrit Interpreter</h2><p>Project QR code</p></div>
   <img src="/sanskrit-interpreter.png" alt="Sanskrit Interpreter project QR code" width="170" height="170" loading="lazy">
 </section>
+<footer class="site-footer">built by <a href="https://github.com/smilewithkhushi" target="_blank" rel="noopener noreferrer">@smilewithkhushi</a> and <a href="https://github.com/delta456" target="_blank" rel="noopener noreferrer">@delta456</a></footer>
 </main>
 </div>
 <script>
@@ -347,17 +348,10 @@ function switchEditor(example) {
   $('workspace-description').textContent = example ? example.description : 'Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.';
   $('run').textContent = example ? 'Run example' : 'Run code';
   $('example-meta').hidden = !example;
-  $('example-stepper').hidden = !example;
   $('example-meta').replaceChildren();
   if (example) {
     addTag($('example-meta'), example.group);
     if (example.variant) addTag($('example-meta'), example.variant + ' syntax');
-    const index = examples.findIndex(item => item.id === example.id);
-    $('example-position').textContent = `${index + 1} of ${examples.length}`;
-    $('previous-example').disabled = index === 0;
-    $('next-example').disabled = index === examples.length - 1;
-    $('previous-example').onclick = () => { location.hash = exampleHref(examples[index - 1]); };
-    $('next-example').onclick = () => { location.hash = exampleHref(examples[index + 1]); };
   }
 }
 function renderRoute() {

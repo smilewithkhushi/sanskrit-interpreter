@@ -2,6 +2,11 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 .venv/
 venv/
 .env
@@ -16,6 +21,11 @@ node_modules/
 dist/
 build/
 *.egg-info/
+
+# Local editor and OS files
+.DS_Store
+.idea/
+.vscode/
 
 /self/*
 !/self/progress.md
