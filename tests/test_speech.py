@@ -4,8 +4,8 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from sanskrit_repl import speech
-from sanskrit_repl.web import Handler
+from sanskrit_interpreter import speech
+from sanskrit_interpreter.web import Handler
 
 
 class SpeechTests(unittest.TestCase):
@@ -32,7 +32,7 @@ class SpeechTests(unittest.TestCase):
                 return iter([type("Segment", (), {"text": " मुद्रय दो "})()]), None
 
         model = Model()
-        with patch("sanskrit_repl.speech._model", return_value=model):
+        with patch("sanskrit_interpreter.speech._model", return_value=model):
             text = speech.transcribe_audio(b"audio bytes", "hi-IN", "audio/webm;codecs=opus")
         self.assertEqual(text, "मुद्रय दो")
         self.assertEqual(model.assert_options["language"], "hi")
@@ -52,7 +52,7 @@ class SpeechTests(unittest.TestCase):
             "X-Speech-Language": "sa-IN", "Host": "127.0.0.1:8765",
             "Origin": "http://127.0.0.1:8765",
         })
-        with patch("sanskrit_repl.web.transcribe_audio", return_value="मुद्रय(2)") as transcribe:
+        with patch("sanskrit_interpreter.web.transcribe_audio", return_value="मुद्रय(2)") as transcribe:
             handler.do_POST()
         self.assertEqual(codes, [200])
         transcribe.assert_called_once_with(b"audio", "sa-IN", "audio/webm")
@@ -60,7 +60,7 @@ class SpeechTests(unittest.TestCase):
 
     def test_status_and_cross_origin_rejection(self):
         handler, codes = self._handler("/speech/status")
-        with patch("sanskrit_repl.web.available", return_value=False):
+        with patch("sanskrit_interpreter.web.available", return_value=False):
             handler.do_GET()
         self.assertEqual(codes, [200])
         self.assertFalse(json.loads(handler.wfile.getvalue())["available"])
@@ -74,7 +74,7 @@ class SpeechTests(unittest.TestCase):
             "Content-Length": "5", "Content-Type": "audio/webm",
             "Host": "127.0.0.1:8765", "Origin": "https://example.com",
         })
-        with patch("sanskrit_repl.web.transcribe_audio") as transcribe:
+        with patch("sanskrit_interpreter.web.transcribe_audio") as transcribe:
             handler.do_POST()
         self.assertEqual(codes, [403])
         transcribe.assert_not_called()

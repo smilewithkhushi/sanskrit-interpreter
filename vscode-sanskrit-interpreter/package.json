@@ -1,6 +1,6 @@
 {
-  "name": "sanskrit-repl-syntax",
-  "displayName": "Sanskrit REPL",
+  "name": "sanskrit-interpreter-syntax",
+  "displayName": "Sanskrit Interpreter",
   "description": "Syntax highlighting, language server features, and English-to-Sanskrit source conversion.",
   "version": "0.3.0",
   "publisher": "local-sanskrit",
@@ -9,17 +9,17 @@
     "vscode": "^1.70.0"
   },
   "main": "./extension.js",
-  "activationEvents": ["onLanguage:sanskrit-repl"],
+  "activationEvents": ["onLanguage:sanskrit-interpreter"],
   "categories": ["Programming Languages"],
   "contributes": {
     "commands": [
       {
         "command": "sanskritRepl.convertToSanskrit",
-        "title": "Sanskrit REPL: Convert English Syntax to Sanskrit"
+        "title": "Sanskrit Interpreter: Convert English Syntax to Sanskrit"
       }
     ],
     "configuration": {
-      "title": "Sanskrit REPL",
+      "title": "Sanskrit Interpreter",
       "properties": {
         "sanskritRepl.pythonPath": {
           "type": "string",
@@ -32,22 +32,22 @@
       "cSpell.enabledFileTypes": {
         "*": true,
         "markdown": true,
-        "sanskrit-repl": false
+        "sanskrit-interpreter": false
       }
     },
     "languages": [
       {
-        "id": "sanskrit-repl",
-        "aliases": ["Sanskrit REPL", "Sanskrit"],
+        "id": "sanskrit-interpreter",
+        "aliases": ["Sanskrit Interpreter", "Sanskrit"],
         "extensions": [".skt", ".sanskrit"],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "sanskrit-repl",
-        "scopeName": "source.sanskrit-repl",
-        "path": "./syntaxes/sanskrit-repl.tmLanguage.json"
+        "language": "sanskrit-interpreter",
+        "scopeName": "source.sanskrit-interpreter",
+        "path": "./syntaxes/sanskrit-interpreter.tmLanguage.json"
       }
     ]
   }

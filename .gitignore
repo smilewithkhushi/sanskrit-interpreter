@@ -27,5 +27,7 @@ build/
 .idea/
 .vscode/
 
-/self/*
-!/self/progress.md
+# Codex / ChatGPT local project mirror — not for the public repo
+/self/
+/sources/
+AGENTS.md

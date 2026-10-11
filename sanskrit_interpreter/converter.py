@@ -1,4 +1,4 @@
-"""Convert English spellings of Sanskrit REPL code into Devanagari spellings."""
+"""Convert English spellings of Sanskrit Interpreter code into Devanagari spellings."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from .interpreter import normalize
 
 
 class ConversionError(ValueError):
-    """The input cannot be converted as runnable Sanskrit REPL code."""
+    """The input cannot be converted as runnable Sanskrit Interpreter code."""
 
     def __init__(self, message: str, line: int | None = None, column: int | None = None):
         super().__init__(message)

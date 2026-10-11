@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Sanskrit REPL",
-  "scopeName": "source.sanskrit-repl",
+  "name": "Sanskrit Interpreter",
+  "scopeName": "source.sanskrit-interpreter",
   "patterns": [
     { "include": "#comments" },
     { "include": "#strings" },
@@ -16,31 +16,31 @@
   "repository": {
     "comments": {
       "patterns": [
-        { "name": "comment.line.number-sign.sanskrit-repl", "match": "#.*$" }
+        { "name": "comment.line.number-sign.sanskrit-interpreter", "match": "#.*$" }
       ]
     },
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.triple.double.sanskrit-repl",
+          "name": "string.quoted.triple.double.sanskrit-interpreter",
           "begin": "\"\"\"",
           "end": "\"\"\"",
           "patterns": [{ "include": "#escapes" }]
         },
         {
-          "name": "string.quoted.triple.single.sanskrit-repl",
+          "name": "string.quoted.triple.single.sanskrit-interpreter",
           "begin": "'''",
           "end": "'''",
           "patterns": [{ "include": "#escapes" }]
         },
         {
-          "name": "string.quoted.double.sanskrit-repl",
+          "name": "string.quoted.double.sanskrit-interpreter",
           "begin": "\"",
           "end": "\"|(?=$)",
           "patterns": [{ "include": "#escapes" }]
         },
         {
-          "name": "string.quoted.single.sanskrit-repl",
+          "name": "string.quoted.single.sanskrit-interpreter",
           "begin": "'",
           "end": "'|(?=$)",
           "patterns": [{ "include": "#escapes" }]
@@ -49,12 +49,12 @@
     },
     "escapes": {
       "patterns": [
-        { "name": "constant.character.escape.sanskrit-repl", "match": "\\\\(?:[\\\\'\"abfnrtv]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})" }
+        { "name": "constant.character.escape.sanskrit-interpreter", "match": "\\\\(?:[\\\\'\"abfnrtv]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})" }
       ]
     },
     "intent": {
       "patterns": [
-        { "name": "keyword.other.command.sanskrit-repl", "match": "^\\s*\\K(?:गणय|दर्शय|calculate|show)(?=\\s)" }
+        { "name": "keyword.other.command.sanskrit-interpreter", "match": "^\\s*\\K(?:गणय|दर्शय|calculate|show)(?=\\s)" }
       ]
     },
     "functionDeclaration": {
@@ -62,8 +62,8 @@
         {
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(कार्य|func|def)(\\s+)([\\p{L}_][\\p{L}\\p{M}\\p{N}_]*)",
           "captures": {
-            "1": { "name": "storage.type.function.sanskrit-repl" },
-            "3": { "name": "entity.name.function.sanskrit-repl" }
+            "1": { "name": "storage.type.function.sanskrit-interpreter" },
+            "3": { "name": "entity.name.function.sanskrit-interpreter" }
           }
         }
       ]
@@ -71,15 +71,15 @@
     "keywords": {
       "patterns": [
         {
-          "name": "keyword.control.flow.sanskrit-repl",
+          "name": "keyword.control.flow.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:अन्ययदि|अन्यथा|यदि|यावत्|प्रत्येक|मध्ये|प्रत्यावर्तय|विराम|अग्रे|if|elif|else|while|for|in|return|break|continue|pass)(?![\\p{L}\\p{M}\\p{N}_])"
         },
         {
-          "name": "keyword.operator.logical.sanskrit-repl",
+          "name": "keyword.operator.logical.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:च|वा|न|and|or|not)(?![\\p{L}\\p{M}\\p{N}_])"
         },
         {
-          "name": "storage.type.variable.sanskrit-repl",
+          "name": "storage.type.variable.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:स्थापय|let)(?![\\p{L}\\p{M}\\p{N}_])"
         }
       ]
@@ -87,7 +87,7 @@
     "constants": {
       "patterns": [
         {
-          "name": "constant.language.sanskrit-repl",
+          "name": "constant.language.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:सत्यम्|असत्यम्|शून्यम्|True|False|None|true|false|nil)(?![\\p{L}\\p{M}\\p{N}_])"
         }
       ]
@@ -95,7 +95,7 @@
     "builtins": {
       "patterns": [
         {
-          "name": "support.function.builtin.sanskrit-repl",
+          "name": "support.function.builtin.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:मुद्रय|लम्बाई|परास|योग|न्यूनतम|अधिकतम|क्रम|उलट|सूची|कोश|समुच्चय|गणना|युग्म|पूर्णांक|दशमलव|अक्षर|बूल|निरपेक्ष|सर्व|कोई|बनाओ|जोड़ो|क्षमता|प्रतिलिपि|वर्गमूल|print|len|range|sum|min|max|sorted|reversed|list|dict|set|enumerate|zip|int|float|str|bool|abs|all|any|make|append|cap|copy|sqrt)(?![\\p{L}\\p{M}\\p{N}_])"
         }
       ]
@@ -103,17 +103,17 @@
     "numbers": {
       "patterns": [
         {
-          "name": "constant.numeric.sanskrit-repl",
+          "name": "constant.numeric.sanskrit-interpreter",
           "match": "(?<![\\p{L}\\p{M}\\p{N}_])(?:0[xX][0-9a-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|(?:[0-9][0-9_]*(?:\\.[0-9_]*)?|\\.[0-9][0-9_]*)(?:[eE][+-]?[0-9][0-9_]*)?)(?![\\p{L}\\p{M}\\p{N}_])"
         }
       ]
     },
     "operators": {
       "patterns": [
-        { "name": "keyword.operator.assignment.sanskrit-repl", "match": ":=|\\+=|-=|\\*=|/=|%=|(?<![=<>!])=(?!=)" },
-        { "name": "keyword.operator.comparison.sanskrit-repl", "match": "==|!=|<=|>=|<|>" },
-        { "name": "keyword.operator.arithmetic.sanskrit-repl", "match": "\\*\\*|//|[+*/%-]" },
-        { "name": "punctuation.separator.sanskrit-repl", "match": "[:,]" }
+        { "name": "keyword.operator.assignment.sanskrit-interpreter", "match": ":=|\\+=|-=|\\*=|/=|%=|(?<![=<>!])=(?!=)" },
+        { "name": "keyword.operator.comparison.sanskrit-interpreter", "match": "==|!=|<=|>=|<|>" },
+        { "name": "keyword.operator.arithmetic.sanskrit-interpreter", "match": "\\*\\*|//|[+*/%-]" },
+        { "name": "punctuation.separator.sanskrit-interpreter", "match": "[:,]" }
       ]
     }
   }

@@ -52,7 +52,7 @@ function handle(message) {
         item.message,
         vscode.DiagnosticSeverity.Error
       );
-      diagnostic.source = item.source || "Sanskrit REPL";
+      diagnostic.source = item.source || "Sanskrit Interpreter";
       return diagnostic;
     });
     diagnostics.set(uri, items);
@@ -77,12 +77,12 @@ function receive(chunk) {
 }
 
 function isSanskrit(document) {
-  return document.languageId === "sanskrit-repl";
+  return document.languageId === "sanskrit-interpreter";
 }
 
 async function activate(context) {
-  diagnostics = vscode.languages.createDiagnosticCollection("sanskrit-repl");
-  output = vscode.window.createOutputChannel("Sanskrit REPL");
+  diagnostics = vscode.languages.createDiagnosticCollection("sanskrit-interpreter");
+  output = vscode.window.createOutputChannel("Sanskrit Interpreter");
   context.subscriptions.push(diagnostics, output);
 
   const python = vscode.workspace.getConfiguration("sanskritRepl").get("pythonPath", "python3");
@@ -132,7 +132,7 @@ async function activate(context) {
     });
   }));
 
-  const selector = { language: "sanskrit-repl" };
+  const selector = { language: "sanskrit-interpreter" };
   context.subscriptions.push(vscode.languages.registerCompletionItemProvider(selector, {
     async provideCompletionItems(document) {
       const result = await request("textDocument/completion", {
@@ -158,12 +158,12 @@ async function activate(context) {
   context.subscriptions.push(vscode.commands.registerCommand("sanskritRepl.convertToSanskrit", async () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor || !isSanskrit(editor.document)) {
-      vscode.window.showInformationMessage("Open a Sanskrit REPL .skt or .sanskrit file first.");
+      vscode.window.showInformationMessage("Open a Sanskrit Interpreter .skt or .sanskrit file first.");
       return;
     }
     try {
       const converted = await request("sanskrit/convert", { text: editor.document.getText() });
-      const preview = await vscode.workspace.openTextDocument({ language: "sanskrit-repl", content: converted });
+      const preview = await vscode.workspace.openTextDocument({ language: "sanskrit-interpreter", content: converted });
       await vscode.window.showTextDocument(preview, { preview: true, viewColumn: vscode.ViewColumn.Beside });
     } catch (error) {
       vscode.window.showErrorMessage(`Conversion failed: ${error.message}`);

@@ -10,7 +10,7 @@ from .converter import ConversionError, convert_to_sanskrit
 
 def repl():
     engine = Interpreter()
-    print("संस्कृत REPL — :help for examples, :quit to leave")
+    print("संस्कृत Interpreter — :help for examples, :quit to leave")
     lines = []
     while True:
         try:

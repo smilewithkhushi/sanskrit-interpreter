@@ -1,28 +1,25 @@
-# Sanskrit REPL
+# Sanskrit Interpreter
 
-A small Sanskrit-inspired programming language with a terminal REPL and browser interface. It supports Devanagari and English keywords, Python-style indentation, and familiar collections and functions.
+> Built by [@smilewithkhushi](https://github.com/smilewithkhushi) (Khushi) and [@delta456](https://github.com/delta456) (Swastik).
 
-[Try the live demo](https://sanskrit-interpreter-misty-night-4163.fly.dev/)
+[![Tests](https://github.com/smilewithkhushi/sanskrit-interpreter/actions/workflows/tests.yml/badge.svg)](https://github.com/smilewithkhushi/sanskrit-interpreter/actions/workflows/tests.yml)
+&nbsp;[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+&nbsp;[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
-## Requirements
+A small Sanskrit-inspired programming language with a terminal REPL and a browser interface. It supports **Devanagari and English keywords**, Python-style indentation, and familiar collections and functions.
 
-Python 3.10 or newer. The core interpreter has no runtime dependencies.
+**[▶ Try the live demo](https://sanskrit-interpreter-misty-night-4163.fly.dev/)**
 
-## Run locally
+## ✨ What we built
 
-From the project root:
+This is more than an interpreter — it's a full toolchain for writing and running Sanskrit code:
 
-```sh
-./script.sh                     # browser interface
-./script.sh examples/demo.skt   # run a source file
-python3 -m sanskrit_repl        # terminal REPL
-```
-
-Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) for the browser interface. Use `./script.sh --web --port 9000` to choose another port. The browser supports code editing and dictation where speech recognition is available.
-
-To install the `sanskrit-repl` command, run `python3 -m pip install .`.
-
-## Language example
+- 🧠 **The language & interpreter** — a safe, bilingual (Devanagari + English) language with variables, conditionals, loops, functions, and collections.
+- 🖥️ **A testable browser frontend** — a live playground where you write code and **run it right in the browser**, with an example library to learn from.
+- 🎨 **A VS Code syntax highlighter + language server** — syntax colors, completions, hover help, and real-time diagnostics for `.skt` files.
+- 🔁 **An English → Sanskrit converter** — turn English keyword spellings into Devanagari, from the CLI or inside VS Code.
+- 🎙️ **Browser dictation** — speak a draft and have it transcribed into code where speech recognition is available.
+- 🚀 **Ready to deploy** — containerized with Docker and shipped live on Fly.io.
 
 ```text
 नाम := "आर्य"
@@ -35,12 +32,78 @@ To install the `sanskrit-repl` command, run `python3 -m pip install .`.
     मुद्रय(वर्ग(x))
 ```
 
-The language supports variables, conditionals, loops, functions, and collections. See [language rules](docs/language.md) and [examples](examples/README.md) for syntax and behavior. This is a limited interpreter; it does not execute arbitrary Python code.
+## Requirements
+
+Python 3.10 or newer. The core interpreter has no runtime dependencies.
+
+## Quick start
+
+From the project root:
+
+```sh
+./scripts/run.sh                     # browser interface
+./scripts/run.sh examples/demo.skt   # run a source file
+python3 -m sanskrit_interpreter      # terminal REPL
+```
+
+Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) for the browser interface. Use `./scripts/run.sh --web --port 9000` to choose another port.
+
+To install the `sanskrit-interpreter` command system-wide:
+
+```sh
+python3 -m pip install .
+sanskrit-interpreter examples/demo.skt
+```
+
+## Language
+
+The language supports variables, conditionals, loops, functions, and collections. See the [language rules](docs/language.md) and [examples](examples/README.md) for full syntax and behavior. This is a limited interpreter; it does not execute arbitrary Python code.
 
 ## Other tools
 
-- Convert English keyword spellings to Sanskrit: `python3 -m sanskrit_repl --to-sanskrit examples/english_syntax.skt`. Add `--output converted.skt` to save the result.
-- Install the optional local speech transcription dependency with `python3 -m pip install -r requirements-speech.txt`. Browser dictation does not require it.
-- Build a single-file Python archive with `python3 build.py`; the result is `dist/sanskrit-repl.pyz`.
+- **Convert English keywords to Sanskrit:**
+  ```sh
+  python3 -m sanskrit_interpreter --to-sanskrit examples/english_syntax.skt
+  ```
+  Add `--output converted.skt` to save the result.
+- **Optional local speech transcription** (browser dictation does not require it):
+  ```sh
+  python3 -m pip install -r requirements/speech.txt
+  ```
+- **Build a single-file executable** archive:
+  ```sh
+  python3 scripts/build.py          # produces dist/sanskrit-interpreter.pyz
+  ```
 
-Deployment configuration is provided in `Dockerfile` and `fly.toml`. Run tests with `python3 -m unittest discover -s tests`. Licensed under [MIT](LICENSE).
+## Project structure
+
+```text
+sanskrit-interpreter/
+├── sanskrit_interpreter/        # the language: interpreter, converter, web + speech, browser UI
+├── vscode-sanskrit-interpreter/ # VS Code extension (highlighting, LSP, conversion)
+├── docs/                        # language reference
+├── examples/                    # sample .skt programs and conversion pairs
+├── tests/                       # unit tests
+├── scripts/                     # run.sh, build.py, macOS launcher
+├── requirements/                # optional extra dependencies (speech)
+├── pyproject.toml               # packaging
+├── Dockerfile, fly.toml         # deployment
+└── README.md, LICENSE
+```
+
+## Development
+
+```sh
+python3 -m unittest discover -s tests
+```
+
+Deployment configuration lives in `Dockerfile` and `fly.toml`.
+
+## Contributors
+
+- [@smilewithkhushi](https://github.com/smilewithkhushi) — Khushi
+- [@delta456](https://github.com/delta456) — Swastik
+
+## License
+
+Licensed under the [MIT License](LICENSE). © 2026 Khushi ([@smilewithkhushi](https://github.com/smilewithkhushi)) and Swastik ([@delta456](https://github.com/delta456)).

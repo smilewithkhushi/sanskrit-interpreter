@@ -1,6 +1,6 @@
-# Sanskrit REPL examples
+# Sanskrit Interpreter examples
 
-Run any file from the project root with `python3 -m sanskrit_repl examples/NAME.skt`. Open a `.skt` file in VS Code to try syntax colors, completions, hover help, and syntax diagnostics.
+Run any file from the project root with `python3 -m sanskrit_interpreter examples/NAME.skt`. Open a `.skt` file in VS Code to try syntax colors, completions, hover help, and syntax diagnostics.
 
 | File | What it shows |
 | --- | --- |

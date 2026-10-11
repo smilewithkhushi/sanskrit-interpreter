@@ -1,4 +1,4 @@
-"""Small, dependency-free Language Server Protocol server for Sanskrit REPL."""
+"""Small, dependency-free Language Server Protocol server for Sanskrit Interpreter."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ import re
 import sys
 import unicodedata
 
-if not (Path(__file__).resolve().parent / "sanskrit_repl").is_dir():
+if not (Path(__file__).resolve().parent / "sanskrit_interpreter").is_dir():
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sanskrit_repl.interpreter import Interpreter, KEYWORDS, normalize, source_column
-from sanskrit_repl.converter import ConversionError, convert_to_sanskrit, validate_tree
+from sanskrit_interpreter.interpreter import Interpreter, KEYWORDS, normalize, source_column
+from sanskrit_interpreter.converter import ConversionError, convert_to_sanskrit, validate_tree
 
 
 BUILTINS = set(Interpreter()._builtins)
@@ -111,7 +111,7 @@ def diagnostics(source: str) -> list[dict]:
                 "end": {"line": line_number, "character": utf16_length(line[:column + 1])},
             },
             "severity": 1,
-            "source": "Sanskrit REPL",
+            "source": "Sanskrit Interpreter",
             "message": str(error),
         }]
     except SyntaxError as error:
@@ -127,7 +127,7 @@ def diagnostics(source: str) -> list[dict]:
                 "end": {"line": line_number, "character": end},
             },
             "severity": 1,
-            "source": "Sanskrit REPL",
+            "source": "Sanskrit Interpreter",
             "message": error.msg,
         }]
 
@@ -185,7 +185,7 @@ def main() -> None:
                     "completionProvider": {},
                     "hoverProvider": True,
                 },
-                "serverInfo": {"name": "Sanskrit REPL", "version": "0.3.0"},
+                "serverInfo": {"name": "Sanskrit Interpreter", "version": "0.3.0"},
             }})
         elif method == "shutdown":
             send({"jsonrpc": "2.0", "id": request_id, "result": None})

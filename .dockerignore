@@ -9,7 +9,9 @@ __pycache__
 dist
 build
 node_modules
-vscode-sanskrit-repl
+vscode-sanskrit-interpreter
+scripts
+requirements
 tests
 examples
 docs

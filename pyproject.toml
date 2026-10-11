@@ -3,13 +3,16 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sanskrit-repl"
+name = "sanskrit-interpreter"
 version = "0.3.0"
 description = "A small Sanskrit-inspired interpreter with terminal and browser interfaces"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
-authors = [{name = "Sanskrit REPL contributors"}]
+authors = [
+    {name = "Khushi (@smilewithkhushi)"},
+    {name = "Swastik (@delta456)"},
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -19,10 +22,10 @@ classifiers = [
 ]
 
 [project.scripts]
-sanskrit-repl = "sanskrit_repl.__main__:main"
+sanskrit-interpreter = "sanskrit_interpreter.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["sanskrit_repl*"]
+include = ["sanskrit_interpreter*"]
 
 [tool.setuptools.package-data]
-sanskrit_repl = ["index.html", "example_catalog.json", "sanskrit-interpreter.png"]
+sanskrit_interpreter = ["index.html", "example_catalog.json", "sanskrit-interpreter.png"]
