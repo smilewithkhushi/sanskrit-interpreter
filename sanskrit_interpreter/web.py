@@ -33,7 +33,7 @@ def example_catalog():
                 "source": source,
             })
         return examples
-    return json.loads(files("sanskrit_repl").joinpath("example_catalog.json").read_text(encoding="utf-8"))
+    return json.loads(files("sanskrit_interpreter").joinpath("example_catalog.json").read_text(encoding="utf-8"))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -87,7 +87,7 @@ class Handler(BaseHTTPRequestHandler):
             self._json_response({"examples": example_catalog()})
             return
         if self.path == "/sanskrit-interpreter.png":
-            data = files("sanskrit_repl").joinpath("sanskrit-interpreter.png").read_bytes()
+            data = files("sanskrit_interpreter").joinpath("sanskrit-interpreter.png").read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "image/png")
             self.send_header("Content-Length", str(len(data)))
@@ -97,7 +97,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/":
             self.send_error(404)
             return
-        data = files("sanskrit_repl").joinpath("index.html").read_bytes()
+        data = files("sanskrit_interpreter").joinpath("index.html").read_bytes()
         self._session()
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -170,7 +170,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def serve(port=8765, host="127.0.0.1"):
     server = HTTPServer((host, port), Handler)
-    print(f"Serving Sanskrit REPL on {host}:{port}")
+    print(f"Serving Sanskrit Interpreter on {host}:{port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

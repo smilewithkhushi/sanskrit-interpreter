@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from sanskrit_repl import Interpreter
-from sanskrit_repl.converter import ConversionError, convert_to_sanskrit
+from sanskrit_interpreter import Interpreter
+from sanskrit_interpreter.converter import ConversionError, convert_to_sanskrit
 
 
 class ConverterTests(unittest.TestCase):

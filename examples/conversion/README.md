@@ -11,21 +11,21 @@ These examples use small in-memory datasets to show code patterns that are usefu
 From the project root, preview a conversion:
 
 ```sh
-python3 -m sanskrit_repl --to-sanskrit examples/conversion/inventory_reorder.english.skt
+python3 -m sanskrit_interpreter --to-sanskrit examples/conversion/inventory_reorder.english.skt
 ```
 
 To write a separate converted file, add `--output`:
 
 ```sh
-python3 -m sanskrit_repl --to-sanskrit examples/conversion/inventory_reorder.english.skt --output /tmp/inventory_reorder.skt
+python3 -m sanskrit_interpreter --to-sanskrit examples/conversion/inventory_reorder.english.skt --output /tmp/inventory_reorder.skt
 ```
 
-Run either version with `python3 -m sanskrit_repl`, for example:
+Run either version with `python3 -m sanskrit_interpreter`, for example:
 
 ```sh
-python3 -m sanskrit_repl examples/conversion/invoice_cents.sanskrit.skt
+python3 -m sanskrit_interpreter examples/conversion/invoice_cents.sanskrit.skt
 ```
 
-In VS Code, open an English file and run **Sanskrit REPL: Convert English Syntax to Sanskrit** from the Command Palette. Review the unsaved preview beside the source before saving it.
+In VS Code, open an English file and run **Sanskrit Interpreter: Convert English Syntax to Sanskrit** from the Command Palette. Review the unsaved preview beside the source before saving it.
 
 These are self-contained examples. Real inventory, billing, and monitoring systems would supply their data through a separate integration layer; this interpreter does not provide file, network, or database access.

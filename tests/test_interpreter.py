@@ -2,7 +2,7 @@ import unittest
 import io
 import json
 
-from sanskrit_repl import Interpreter, SanskritError
+from sanskrit_interpreter import Interpreter, SanskritError
 
 
 class InterpreterTests(unittest.TestCase):
@@ -80,7 +80,7 @@ class InterpreterTests(unittest.TestCase):
         self.assertEqual(engine.execute("मुद्रय(saved)"), "42\n")
 
     def test_browser_endpoint_without_socket(self):
-        from sanskrit_repl.web import Handler
+        from sanskrit_interpreter.web import Handler
         handler = Handler.__new__(Handler)
         body = json.dumps({"source": "मुद्रय(योग([1, 2, 3]))"}).encode()
         handler.path = "/run"
@@ -94,7 +94,7 @@ class InterpreterTests(unittest.TestCase):
         self.assertEqual(json.loads(handler.wfile.getvalue())["output"], "6\n")
 
     def test_browser_accepts_same_host_https_origin(self):
-        from sanskrit_repl.web import Handler
+        from sanskrit_interpreter.web import Handler
         handler = Handler.__new__(Handler)
         body = json.dumps({"source": "मुद्रय(7)"}).encode()
         handler.path = "/run"
@@ -114,7 +114,7 @@ class InterpreterTests(unittest.TestCase):
         self.assertEqual(json.loads(handler.wfile.getvalue())["output"], "7\n")
 
     def test_browser_sessions_are_isolated(self):
-        from sanskrit_repl.web import Handler
+        from sanskrit_interpreter.web import Handler
         Handler.sessions.clear()
 
         def request(payload, cookie=None):

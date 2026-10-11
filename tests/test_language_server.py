@@ -7,7 +7,7 @@ import sys
 import unittest
 
 
-SERVER = Path(__file__).resolve().parents[1] / "vscode-sanskrit-repl" / "server.py"
+SERVER = Path(__file__).resolve().parents[1] / "vscode-sanskrit-interpreter" / "server.py"
 
 
 class LanguageServerTests(unittest.TestCase):

@@ -45,7 +45,7 @@ def _model():
     try:
         from faster_whisper import WhisperModel
     except ImportError as error:
-        raise SpeechUnavailable("Local transcription requires faster-whisper. Install requirements-speech.txt.") from error
+        raise SpeechUnavailable("Local transcription requires faster-whisper. Install requirements/speech.txt.") from error
     return WhisperModel(model_name(), device="cpu", compute_type="int8")
 
 

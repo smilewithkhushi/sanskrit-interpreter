@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>संस्कृत REPL</title>
+<title>संस्कृत Interpreter</title>
 <style>
   :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f1f0ed; background: #10151e; }
   * { box-sizing: border-box; }
@@ -113,7 +113,7 @@
 </style>
 <div class="app-shell">
 <aside class="sidebar" aria-label="Site navigation">
-  <a class="brand" href="#workspace"><span class="brand-mark" aria-hidden="true">स</span><span>Sanskrit REPL</span></a>
+  <a class="brand" href="#workspace"><span class="brand-mark" aria-hidden="true">स</span><span>Sanskrit Interpreter</span></a>
   <div class="nav-label">Navigate</div>
   <nav class="main-nav" aria-label="Pages">
     <a href="#workspace" data-nav="workspace"><span class="nav-icon">⌘</span>Workspace</a>
@@ -128,7 +128,7 @@
 <section id="page-workspace" data-page="workspace">
 <header class="page-header">
   <div class="page-kicker" id="workspace-kicker">A spoken code workspace</div>
-  <h1 id="workspace-title">संस्कृत REPL</h1>
+  <h1 id="workspace-title">संस्कृत Interpreter</h1>
   <p id="workspace-description">Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.</p>
   <div id="example-meta" class="example-meta" hidden></div>
 </header>
@@ -344,7 +344,7 @@ function switchEditor(example) {
   }
   activeExampleId = example?.id || null;
   $('workspace-kicker').textContent = example ? example.group : 'A spoken code workspace';
-  $('workspace-title').textContent = example ? example.title : 'संस्कृत REPL';
+  $('workspace-title').textContent = example ? example.title : 'संस्कृत Interpreter';
   $('workspace-description').textContent = example ? example.description : 'Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.';
   $('run').textContent = example ? 'Run example' : 'Run code';
   $('example-meta').hidden = !example;
@@ -405,7 +405,7 @@ if ('IntersectionObserver' in window) {
   observer.observe(art);
 }
 if (location.protocol === 'file:') {
-  $('status').textContent = 'This file is the interface only. Start the interpreter with “Start Sanskrit REPL.command”, then use http://127.0.0.1:8765/.';
+  $('status').textContent = 'This file is the interface only. Start the interpreter with “scripts/Start Sanskrit Interpreter.command”, then use http://127.0.0.1:8765/.';
   $('output').textContent = 'The interpreter is not running on this file page.';
   $('run').disabled = true;
   $('reset').disabled = true;
@@ -420,7 +420,7 @@ async function request(payload) {
     $('output').textContent = data.output + (data.error ? '\nत्रुटि: ' + data.error : '');
     $('output').classList.toggle('error', !!data.error);
   } catch (error) {
-    $('output').textContent = 'Cannot reach the interpreter. Start “Start Sanskrit REPL.command” and open http://127.0.0.1:8765/.';
+    $('output').textContent = 'Cannot reach the interpreter. Start “scripts/Start Sanskrit Interpreter.command” and open http://127.0.0.1:8765/.';
     $('output').classList.add('error');
   }
 }
@@ -525,7 +525,7 @@ if (location.protocol !== 'file:') {
       $('upload-audio').disabled = false;
       $('speech-help').textContent = `Local audio transcription is ready (${data.model} model). Record up to 30 seconds or upload an audio file; review the text before running.`;
     } else {
-      $('speech-help').textContent = 'For local audio transcription, install requirements-speech.txt and restart the server. Browser dictation may still work.';
+      $('speech-help').textContent = 'For local audio transcription, install requirements/speech.txt and restart the server. Browser dictation may still work.';
     }
   }).catch(() => { $('speech-help').textContent = 'Local transcription status is unavailable.'; });
 }

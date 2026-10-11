@@ -43,10 +43,10 @@ def main():
     with ZipFile(OUTPUT, "w", ZIP_DEFLATED) as archive:
         archive.writestr("extension.vsixmanifest", manifest)
         archive.writestr("[Content_Types].xml", content_types)
-        for relative in ("package.json", "README.md", "language-configuration.json", "syntaxes/sanskrit-repl.tmLanguage.json", "extension.js", "server.py"):
+        for relative in ("package.json", "README.md", "language-configuration.json", "syntaxes/sanskrit-interpreter.tmLanguage.json", "extension.js", "server.py"):
             archive.write(ROOT / relative, "extension/" + relative)
         for relative in ("__init__.py", "interpreter.py", "converter.py"):
-            archive.write(ROOT.parent / "sanskrit_repl" / relative, "extension/sanskrit_repl/" + relative)
+            archive.write(ROOT.parent / "sanskrit_interpreter" / relative, "extension/sanskrit_interpreter/" + relative)
     print(OUTPUT)
 
 

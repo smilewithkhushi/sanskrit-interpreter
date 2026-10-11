@@ -1,4 +1,4 @@
-# Sanskrit REPL language rules
+# Sanskrit Interpreter language rules
 
 The language is a deliberately small, Python-like subset. Devanagari and English
 spellings of control words and built-ins are accepted. Indentation defines blocks.
