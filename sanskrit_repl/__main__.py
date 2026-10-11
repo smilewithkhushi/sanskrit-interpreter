@@ -47,6 +47,7 @@ def main():
     parser = argparse.ArgumentParser(description="Sanskrit-inspired interpreter")
     parser.add_argument("file", nargs="?", type=Path, help="run a .skt source file")
     parser.add_argument("--web", action="store_true", help="start local text and voice REPL")
+    parser.add_argument("--host", default="127.0.0.1", help="web server bind address (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--to-sanskrit", action="store_true", help="convert English language spellings to Sanskrit")
     parser.add_argument("--output", type=Path, help="write converted source to this file")
@@ -69,7 +70,7 @@ def main():
         parser.error("--output requires --to-sanskrit")
     elif args.web:
         from .web import serve
-        serve(args.port)
+        serve(args.port, args.host)
     elif args.file:
         engine = Interpreter()
         try:

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "collections.skt",
+    "title": "Collections",
+    "group": "Core examples",
+    "variant": null,
+    "description": "Dictionaries, indexing, slices, sorting, and Go-inspired list helpers.",
+    "source": "# Dictionaries, indexing, slices, sorting, and Go-inspired list helpers.\nफल := {\"सेब\": 3, \"केला\": 5, \"आम\": 2}\nप्रत्येक नाम मध्ये फल:\n    मुद्रय(नाम, \"=\", फल[नाम])\n\nसंख्या := [4, 1, 9, 2]\nमुद्रय(\"क्रमबद्ध:\", क्रम(संख्या))\nमुद्रय(\"पहली दो:\", संख्या[:2])\nमुद्रय(\"योग:\", योग(संख्या))\n\nस्थान := बनाओ(\"सूची\", 2)\nप्रतिलिपि(स्थान, संख्या)\nमुद्रय(\"प्रतिलिपि:\", स्थान, \"क्षमता:\", क्षमता(स्थान))\n"
+  },
+  {
+    "id": "conditionals.skt",
+    "title": "Conditionals",
+    "group": "Core examples",
+    "variant": null,
+    "description": "A small score report: variables, Boolean conditions, and if/elif/else.",
+    "source": "# A small score report: variables, Boolean conditions, and if/elif/else.\nनाम := \"आर्या\"\nअंक := 82\n\nयदि अंक >= 90:\n    श्रेणी := \"A\"\nअन्ययदि अंक >= 75:\n    श्रेणी := \"B\"\nअन्यथा:\n    श्रेणी := \"C\"\n\nमुद्रय(f\"{नाम}: {अंक} अंक, श्रेणी {श्रेणी}\")\nमुद्रय(\"उत्तीर्ण:\", अंक >= 40 च अंक <= 100)\n"
+  },
+  {
+    "id": "conversion/inventory_reorder.english.skt",
+    "title": "Inventory Reorder",
+    "group": "Conversion pairs",
+    "variant": "English",
+    "description": "Build a deterministic reorder list from in-memory stock and minimums.",
+    "source": "# Build a deterministic reorder list from in-memory stock and minimums.\n# A missing stock entry counts as zero units on hand.\nfunc reorder_report(stock, minimums):\n    report := []\n    for sku in sorted(minimums):\n        on_hand := stock[sku] if sku in stock else 0\n        needed := minimums[sku] - on_hand\n        if needed > 0:\n            report = append(report, {\"sku\": sku, \"quantity\": needed})\n    return report\n\nstock := {\"A-100\": 4, \"B-200\": 12}\nminimums := {\"A-100\": 10, \"B-200\": 8, \"C-300\": 5}\nreorders := reorder_report(stock, minimums)\n\nfor row in reorders:\n    print(row[\"sku\"], \"reorder\", row[\"quantity\"])\nprint(\"Reorder lines:\", len(reorders))\n"
+  },
+  {
+    "id": "conversion/inventory_reorder.sanskrit.skt",
+    "title": "Inventory Reorder",
+    "group": "Conversion pairs",
+    "variant": "Sanskrit",
+    "description": "Build a deterministic reorder list from in-memory stock and minimums.",
+    "source": "# Build a deterministic reorder list from in-memory stock and minimums.\n# A missing stock entry counts as zero units on hand.\nकार्य reorder_report(stock, minimums):\n    report := []\n    प्रत्येक sku मध्ये क्रम(minimums):\n        on_hand := stock[sku] यदि sku मध्ये stock अन्यथा 0\n        needed := minimums[sku] - on_hand\n        यदि needed > 0:\n            report = जोड़ो(report, {\"sku\": sku, \"quantity\": needed})\n    प्रत्यावर्तय report\n\nstock := {\"A-100\": 4, \"B-200\": 12}\nminimums := {\"A-100\": 10, \"B-200\": 8, \"C-300\": 5}\nreorders := reorder_report(stock, minimums)\n\nप्रत्येक row मध्ये reorders:\n    मुद्रय(row[\"sku\"], \"reorder\", row[\"quantity\"])\nमुद्रय(\"Reorder lines:\", लम्बाई(reorders))\n"
+  },
+  {
+    "id": "conversion/invoice_cents.english.skt",
+    "title": "Invoice Cents",
+    "group": "Conversion pairs",
+    "variant": "English",
+    "description": "Calculate an invoice in integer cents to avoid rounding in money totals.",
+    "source": "# Calculate an invoice in integer cents to avoid rounding in money totals.\n# Return None for invalid quantities, prices, or discounts.\nfunc invoice_total_cents(lines, discount_cents):\n    subtotal := 0\n    for line in lines:\n        if line[\"quantity\"] < 0 or line[\"unit_cents\"] < 0:\n            return None\n        subtotal += line[\"quantity\"] * line[\"unit_cents\"]\n    if discount_cents < 0 or discount_cents > subtotal:\n        return None\n    return subtotal - discount_cents\n\nlines := [\n    {\"sku\": \"NOTEBOOK\", \"quantity\": 3, \"unit_cents\": 1299},\n    {\"sku\": \"PEN\", \"quantity\": 5, \"unit_cents\": 175},\n]\ntotal := invoice_total_cents(lines, 250)\nif total is None:\n    print(\"Invalid invoice\")\nelse:\n    print(\"Invoice total (cents):\", total)\n"
+  },
+  {
+    "id": "conversion/invoice_cents.sanskrit.skt",
+    "title": "Invoice Cents",
+    "group": "Conversion pairs",
+    "variant": "Sanskrit",
+    "description": "Calculate an invoice in integer cents to avoid rounding in money totals.",
+    "source": "# Calculate an invoice in integer cents to avoid rounding in money totals.\n# Return None for invalid quantities, prices, or discounts.\nकार्य invoice_total_cents(lines, discount_cents):\n    subtotal := 0\n    प्रत्येक line मध्ये lines:\n        यदि line[\"quantity\"] < 0 वा line[\"unit_cents\"] < 0:\n            प्रत्यावर्तय शून्यम्\n        subtotal += line[\"quantity\"] * line[\"unit_cents\"]\n    यदि discount_cents < 0 वा discount_cents > subtotal:\n        प्रत्यावर्तय शून्यम्\n    प्रत्यावर्तय subtotal - discount_cents\n\nlines := [\n    {\"sku\": \"NOTEBOOK\", \"quantity\": 3, \"unit_cents\": 1299},\n    {\"sku\": \"PEN\", \"quantity\": 5, \"unit_cents\": 175},\n]\ntotal := invoice_total_cents(lines, 250)\nयदि total is शून्यम्:\n    मुद्रय(\"Invalid invoice\")\nअन्यथा:\n    मुद्रय(\"Invoice total (cents):\", total)\n"
+  },
+  {
+    "id": "conversion/service_health.english.skt",
+    "title": "Service Health",
+    "group": "Conversion pairs",
+    "variant": "English",
+    "description": "Report service availability in basis points (10000 = 100.00%).",
+    "source": "# Report service availability in basis points (10000 = 100.00%).\n# Invalid or empty samples are reported separately from unhealthy services.\nfunc availability_bps(healthy, total):\n    if total <= 0 or healthy < 0 or healthy > total:\n        return None\n    return healthy * 10000 // total\n\nsamples := [\n    {\"service\": \"api\", \"healthy\": 998, \"total\": 1000},\n    {\"service\": \"worker\", \"healthy\": 970, \"total\": 1000},\n    {\"service\": \"scheduler\", \"healthy\": 0, \"total\": 0},\n]\n\nfor sample in samples:\n    score := availability_bps(sample[\"healthy\"], sample[\"total\"])\n    if score is None:\n        print(sample[\"service\"], \"no valid sample\")\n    elif score < 9950:\n        print(sample[\"service\"], \"alert\", score, \"bps\")\n    else:\n        print(sample[\"service\"], \"healthy\", score, \"bps\")\n"
+  },
+  {
+    "id": "conversion/service_health.sanskrit.skt",
+    "title": "Service Health",
+    "group": "Conversion pairs",
+    "variant": "Sanskrit",
+    "description": "Report service availability in basis points (10000 = 100.00%).",
+    "source": "# Report service availability in basis points (10000 = 100.00%).\n# Invalid or empty samples are reported separately from unhealthy services.\nकार्य availability_bps(healthy, total):\n    यदि total <= 0 वा healthy < 0 वा healthy > total:\n        प्रत्यावर्तय शून्यम्\n    प्रत्यावर्तय healthy * 10000 // total\n\nsamples := [\n    {\"service\": \"api\", \"healthy\": 998, \"total\": 1000},\n    {\"service\": \"worker\", \"healthy\": 970, \"total\": 1000},\n    {\"service\": \"scheduler\", \"healthy\": 0, \"total\": 0},\n]\n\nप्रत्येक sample मध्ये samples:\n    score := availability_bps(sample[\"healthy\"], sample[\"total\"])\n    यदि score is शून्यम्:\n        मुद्रय(sample[\"service\"], \"no valid sample\")\n    अन्ययदि score < 9950:\n        मुद्रय(sample[\"service\"], \"alert\", score, \"bps\")\n    अन्यथा:\n        मुद्रय(sample[\"service\"], \"healthy\", score, \"bps\")\n"
+  },
+  {
+    "id": "demo.skt",
+    "title": "Demo",
+    "group": "Core examples",
+    "variant": null,
+    "description": "Sanskrit keywords with Go-style := declarations and Python-style indentation.",
+    "source": "# Sanskrit keywords with Go-style := declarations and Python-style indentation.\nसंख्या := [1, 2, 3, 4, 5]\nमुद्रय(\"मूल सूची:\", संख्या)\nमुद्रय(\"योग:\", योग(संख्या))\n\nकार्य वर्ग(n):\n    प्रत्यावर्तय n * n\n\nवर्गाः := []\nप्रत्येक n मध्ये संख्या:\n    वर्गाः = जोड़ो(वर्गाः, वर्ग(n))\n\nयदि योग(वर्गाः) > 50:\n    मुद्रय(\"वर्गों का योग 50 से अधिक है:\", वर्गाः)\nअन्यथा:\n    मुद्रय(\"वर्ग:\", वर्गाः)\n\n# Go-inspired make, append, cap, copy.\nस्थान := बनाओ(\"सूची\", 3)\nप्रतिलिपि(स्थान, वर्गाः)\nमुद्रय(\"पहले तीन:\", स्थान, \"क्षमता:\", क्षमता(स्थान))\n"
+  },
+  {
+    "id": "english_syntax.skt",
+    "title": "English Syntax",
+    "group": "Core examples",
+    "variant": null,
+    "description": "English spellings work alongside Sanskrit words and Go-style :=.",
+    "source": "# English spellings work alongside Sanskrit words and Go-style :=.\nfunc square(n):\n    return n * n\n\nvalues := []\nfor n in range(1, 5):\n    values = append(values, square(n))\n\nprint(\"Squares:\", values)\nprint(\"Sum:\", sum(values))\n"
+  },
+  {
+    "id": "fibonacci.skt",
+    "title": "Fibonacci",
+    "group": "Core examples",
+    "variant": null,
+    "description": "Functions, a while loop, tuple assignment, and list building.",
+    "source": "# Functions, a while loop, tuple assignment, and list building.\nकार्य फिबोनाची(कितने):\n    परिणाम := []\n    अ := 0\n    ब := 1\n    यावत् लम्बाई(परिणाम) < कितने:\n        परिणाम = जोड़ो(परिणाम, अ)\n        अ, ब = ब, अ + ब\n    प्रत्यावर्तय परिणाम\n\nमुद्रय(\"पहली आठ संख्याएँ:\", फिबोनाची(8))\n"
+  },
+  {
+    "id": "spoken_commands.skt",
+    "title": "Spoken Commands",
+    "group": "Core examples",
+    "variant": null,
+    "description": "Explicit spoken-style commands; no function-call punctuation needed.",
+    "source": "# Explicit spoken-style commands; no function-call punctuation needed.\nगणय दो जोड़ तीन\nगणय आठ भाग दो\ncalculate ९ plus १\nदर्शय ४ * २\nshow 7 - 2\n"
+  }
+]

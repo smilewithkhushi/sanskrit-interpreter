@@ -4,10 +4,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>संस्कृत REPL</title>
 <style>
-  :root { font-family: system-ui, sans-serif; color: #eee9dc; background: #151b27; }
-  body { max-width: 920px; margin: 2rem auto; padding: 0 1rem; }
-  h1 { margin-bottom: .2rem; color: #f0c96d; }
-  p { line-height: 1.5; color: #c4c5ce; }
+  :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f1f0ed; background: #10151e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .app-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+  .sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 1.5rem .9rem; border-right: 1px solid #2b394b; background: #151d29; overflow-y: auto; }
+  .brand { display: flex; gap: .7rem; align-items: center; padding: .35rem .7rem 1.5rem; color: #f5d68a; font-weight: 750; text-decoration: none; }
+  .brand-mark { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid #725e39; border-radius: 10px; background: #443a2b; font-size: 1.2rem; }
+  .nav-label { margin: .8rem .7rem .4rem; color: #8793a5; font-size: .68rem; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+  .main-nav, .template-list { display: grid; gap: .2rem; }
+  .main-nav a, .template-link { display: flex; align-items: center; gap: .6rem; padding: .65rem .7rem; border: 1px solid transparent; border-radius: 9px; color: #c5cfdd; font-size: .88rem; text-decoration: none; }
+  .main-nav a:hover, .template-link:hover { background: #263345; color: white; }
+  .main-nav a.active, .template-link.active { border-color: #5b5648; background: #3d3b34; color: #f5d68a; }
+  .nav-icon { width: 1.25rem; text-align: center; color: #d9bd7c; }
+  .sidebar-count { float: right; color: #d9bd7c; }
+  .template-link { display: block; padding: .55rem .7rem; line-height: 1.25; }
+  .template-link small { display: block; margin-top: .2rem; color: #8793a5; font-size: .73rem; }
+  .sidebar-note { margin: auto .7rem 0; padding-top: 1.25rem; color: #77859a; font-size: .75rem; line-height: 1.5; }
+  main { width: min(100%, 1150px); min-width: 0; margin: 0 auto; padding: 2.7rem clamp(1.2rem, 4vw, 3.7rem) 5rem; }
+  [hidden] { display: none !important; }
+  .page-kicker { color: #e4b95d; font-size: .73rem; font-weight: 750; letter-spacing: .18em; text-transform: uppercase; }
+  .page-header { margin-bottom: 1.8rem; }
+  .page-header h1 { margin-bottom: .5rem; }
+  .page-header p { max-width: 700px; margin: 0; }
+  .example-meta { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .8rem; }
+  .pill { padding: .25rem .55rem; border: 1px solid #40516a; border-radius: 999px; color: #aebbd0; font-size: .72rem; }
+  .stepper { display: flex; align-items: center; gap: .5rem; margin-top: 1rem; }
+  .stepper button { padding: .42rem .65rem; font-size: .8rem; }
+  .stepper span { color: #9cabc0; font-size: .8rem; }
+  .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .85rem; }
+  .library-card { display: flex; min-height: 155px; flex-direction: column; padding: 1.1rem; border: 1px solid #35435a; border-radius: 13px; background: #1b2737; color: inherit; text-decoration: none; }
+  .library-card:hover { border-color: #d8b96e; background: #253348; }
+  .library-card strong { margin-bottom: .4rem; color: #f2ead7; font-size: 1rem; }
+  .library-card p { margin: 0; font-size: .81rem; }
+  .library-card span { margin-top: auto; padding-top: 1rem; color: #f5d68a; font-size: .8rem; font-weight: 650; }
+  .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .9rem; }
+  .guide-card { padding: 1.2rem; border: 1px solid #35435a; border-radius: 13px; background: #1b2737; }
+  .guide-card h2 { margin: 0 0 .5rem; font-size: 1rem; }
+  .guide-card p { margin: 0; font-size: .9rem; }
+  .scroll-art { display: grid; grid-template-columns: minmax(0, 1fr) 170px; align-items: center; gap: 1.5rem; margin-top: 3rem; padding: 1.25rem; border: 1px solid #35435a; border-radius: 16px; background: #1a2534; }
+  .scroll-art h2 { margin: .35rem 0; font-size: 1.1rem; }
+  .scroll-art p { margin: 0; font-size: .85rem; }
+  .scroll-art img { display: block; width: 100%; border: 8px solid white; border-radius: 8px; background: white; }
+  .reveal-ready { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
+  .reveal-ready.is-visible { opacity: 1; transform: none; }
+  h1 { margin: .35rem 0 .7rem; color: #f5d68a; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -.04em; }
+  p { line-height: 1.55; color: #b8c1cf; }
+  .eyebrow { color: #e4b95d; font-size: .75rem; font-weight: 750; letter-spacing: .18em; text-transform: uppercase; }
+  .intro { max-width: 680px; margin: 0 0 2rem; }
+  .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 .7rem; }
+  .section-heading h2 { margin: 0; font-size: 1rem; font-weight: 650; }
+  .section-heading span { color: #8793a5; font-size: .82rem; }
   textarea, pre { width: 100%; box-sizing: border-box; padding: 1rem; border: 1px solid #495164; border-radius: 10px; background: #202839; color: #f7f5ee; font: 1rem/1.5 ui-monospace, monospace; }
   .editor { position: relative; }
   .editor pre, .editor textarea { margin: 0; min-height: 220px; white-space: pre; overflow: auto; tab-size: 4; }
@@ -23,33 +70,120 @@
   .token-comment { color: #8994a8; }
   .token-operator { color: #f3a7be; }
   #output { min-height: 100px; white-space: pre-wrap; }
-  button, select { padding: .65rem .9rem; border: 0; border-radius: 8px; font: inherit; }
-  button { background: #f0c96d; color: #1a1b22; cursor: pointer; margin: .35rem .3rem .35rem 0; }
+  button, select { padding: .7rem .95rem; border: 1px solid transparent; border-radius: 9px; font: inherit; }
+  button { background: #f0c96d; color: #1a1b22; cursor: pointer; font-weight: 650; }
+  button:hover:not(:disabled) { filter: brightness(1.1); }
+  button:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid #f0c96d; outline-offset: 3px; }
   button:disabled { opacity: .5; cursor: not-allowed; }
-  .secondary { background: #353e51; color: white; }
+  .secondary { background: #303b4c; color: white; border-color: #445166; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: 1rem 0 0; }
+  .actions select { min-width: 195px; background: #202839; border-color: #495164; color: #f1f0ed; }
+  .dictation { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 340px); gap: 1.25rem; align-items: center; margin: 1.5rem 0 1rem; padding: 1.35rem; border: 1px solid #35435a; border-radius: 18px; background: linear-gradient(125deg, #212d3d 0%, #192333 60%, #20283c 100%); box-shadow: 0 14px 40px #05080d33; }
+  .dictation-topline { display: flex; align-items: center; gap: .6rem; color: #abb8ca; font-size: .75rem; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+  .state-dot { width: 8px; height: 8px; border-radius: 50%; background: #8190a5; }
+  .dictation[data-state="listening"] .state-dot { background: #ff786e; box-shadow: 0 0 0 5px #ff786e25; animation: pulse 1.5s infinite; }
+  .dictation[data-state="done"] .state-dot { background: #7ed9ab; }
+  .dictation[data-state="error"] .state-dot { background: #ff786e; }
+  .dictation h2 { margin: .65rem 0 .4rem; font-size: 1.3rem; letter-spacing: -.02em; }
+  .dictation p { margin: 0; font-size: .9rem; }
+  #voice { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; margin-top: 1.15rem; min-width: 180px; background: #f5d68a; }
+  #voice[data-active="true"] { background: #ff8077; }
+  #voice-icon { font-size: 1.1rem; line-height: 1; }
+  .speech-visual { min-height: 145px; display: flex; flex-direction: column; justify-content: center; padding: 1rem; border: 1px solid #3a4a62; border-radius: 14px; background: #101926b8; overflow: hidden; }
+  .waveform { height: 55px; display: flex; align-items: center; justify-content: center; gap: 3px; }
+  .waveform span { display: block; width: 4px; min-height: 4px; height: 4px; border-radius: 4px; background: #687d98; transition: height 90ms ease, background-color 150ms ease; }
+  .dictation[data-state="listening"] .waveform span { background: #f5d68a; }
+  .dictation[data-state="listening"][data-audio="false"] .waveform span { animation: listening-bar 1s ease-in-out infinite alternate; animation-delay: calc(var(--bar-index) * -43ms); }
+  .speech-caption { min-height: 2.8em; margin-top: .7rem; color: #dce5ef; font-size: .85rem; line-height: 1.4; text-align: center; overflow-wrap: anywhere; }
+  .speech-caption.placeholder { color: #8e9cb0; }
+  .speech-caption .interim { color: #f5d68a; }
+  .audio-actions { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
+  .audio-actions button { font-size: .85rem; }
+  #speech-help { margin: .7rem 0; font-size: .84rem; }
+  #status { min-height: 1.5em; font-size: .9rem; }
+  .output-heading { margin-top: 1.7rem; }
   .error { color: #ff9e9e; }
   code { color: #f0c96d; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 9px #ff786e08; } }
+  @keyframes listening-bar { from { height: 5px; } to { height: 23px; } }
+  @media (max-width: 760px) { .app-shell { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; max-height: 300px; border-right: 0; border-bottom: 1px solid #2b394b; } .brand { padding-bottom: .5rem; } .main-nav { grid-template-columns: repeat(3, 1fr); } .main-nav a { justify-content: center; font-size: .78rem; } .nav-icon { display: none; } .sidebar-note { display: none; } main { padding-top: 2rem; } }
+  @media (max-width: 680px) { .dictation, .scroll-art { grid-template-columns: 1fr; } .speech-visual { min-height: 118px; } .section-heading span { display: none; } .scroll-art img { max-width: 170px; } }
+  @media (prefers-reduced-motion: reduce) { .state-dot, .waveform span { animation: none !important; transition: none; } .reveal-ready { opacity: 1; transform: none; transition: none; } }
 </style>
-<h1>संस्कृत REPL</h1>
-<p>Write Sanskrit-inspired code, or dictate it and edit the transcript before running. Your variables persist between runs.</p>
+<div class="app-shell">
+<aside class="sidebar" aria-label="Site navigation">
+  <a class="brand" href="#workspace"><span class="brand-mark" aria-hidden="true">स</span><span>Sanskrit REPL</span></a>
+  <div class="nav-label">Navigate</div>
+  <nav class="main-nav" aria-label="Pages">
+    <a href="#workspace" data-nav="workspace"><span class="nav-icon">⌘</span>Workspace</a>
+    <a href="#examples" data-nav="examples"><span class="nav-icon">▦</span>Examples</a>
+    <a href="#guide" data-nav="guide"><span class="nav-icon">?</span>Quick guide</a>
+  </nav>
+  <div class="nav-label">Templates <span id="template-count" class="sidebar-count"></span></div>
+  <nav id="sidebar-examples" class="template-list" aria-label="Example templates"><p class="sidebar-note">Loading examples…</p></nav>
+  <p class="sidebar-note">Choose a template to open it in the editor. Each example runs with a fresh interpreter state.</p>
+</aside>
+<main>
+<section id="page-workspace" data-page="workspace">
+<header class="page-header">
+  <div class="page-kicker" id="workspace-kicker">A spoken code workspace</div>
+  <h1 id="workspace-title">संस्कृत REPL</h1>
+  <p id="workspace-description">Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.</p>
+  <div id="example-meta" class="example-meta" hidden></div>
+  <div id="example-stepper" class="stepper" hidden><button id="previous-example" class="secondary" type="button">← Previous</button><span id="example-position"></span><button id="next-example" class="secondary" type="button">Next →</button></div>
+</header>
+<div class="section-heading"><h2>Source editor</h2><span>Write, dictate, then refine</span></div>
 <div class="editor">
   <pre id="highlight" aria-hidden="true"></pre>
   <textarea id="source" aria-label="Sanskrit source code" spellcheck="false" wrap="off">संख्या := [1, 2, 3, 4]
 मुद्रय("योग =", योग(संख्या))</textarea>
 </div>
-<div>
+<div class="actions">
   <button id="run">Run code</button>
-  <button id="voice" class="secondary">🎙 Browser dictate</button>
+  <button id="reset" class="secondary">Reset state</button>
+  <select id="language" aria-label="Speech language"><option value="hi-IN">Hindi / Sanskrit words</option><option value="sa-IN">Sanskrit</option><option value="en-IN">English</option></select>
+</div>
+<section class="dictation" id="dictation" data-state="idle" data-audio="false" aria-label="Browser dictation">
+  <div>
+    <div class="dictation-topline"><span class="state-dot" aria-hidden="true"></span><span id="voice-state">Browser dictation · Ready</span></div>
+    <h2>Speak your code</h2>
+    <p id="voice-description">Start dictation and watch your words appear here as you speak.</p>
+    <button id="voice" type="button"><span id="voice-icon" aria-hidden="true">🎙</span><span id="voice-label">Start dictation</span></button>
+  </div>
+  <div class="speech-visual" aria-label="Microphone activity and live transcript">
+    <div id="waveform" class="waveform" aria-hidden="true"></div>
+    <div id="speech-caption" class="speech-caption placeholder" aria-live="polite">Your live transcript will appear here</div>
+  </div>
+</section>
+<div class="audio-actions">
   <button id="local-voice" class="secondary" disabled>🎤 Record locally</button>
   <button id="upload-audio" class="secondary" disabled>Transcribe audio file</button>
   <input id="audio-file" type="file" accept="audio/*" hidden>
-  <select id="language" aria-label="Speech language"><option value="hi-IN">Hindi / Sanskrit words</option><option value="sa-IN">Sanskrit</option><option value="en-IN">English</option></select>
-  <button id="reset" class="secondary">Reset state</button>
 </div>
 <p id="speech-help">Checking local transcription…</p>
 <p id="status" role="status"></p>
+<div class="section-heading output-heading"><h2>Output</h2></div>
 <pre id="output" aria-live="polite"></pre>
 <p>Try <code>कार्य वर्ग(n):</code> then an indented <code>प्रत्यावर्तय n * n</code>. Use <code>यदि</code>, <code>अन्यथा</code>, <code>यावत्</code>, <code>प्रत्येक</code>, and <code>मध्ये</code> for control flow.</p>
+</section>
+<section id="page-examples" data-page="examples" hidden>
+  <header class="page-header"><div class="page-kicker">Learn by running</div><h1>Example library</h1><p>Open a template to explore its source, make changes, and run it. Choose another from the left pane or use Previous and Next.</p></header>
+  <div id="library-grid" class="library-grid"></div>
+</section>
+<section id="page-guide" data-page="guide" hidden>
+  <header class="page-header"><div class="page-kicker">Quick guide</div><h1>Start writing</h1><p>Use the workspace to write code, speak a draft, or open a ready-made template.</p></header>
+  <div class="guide-grid">
+    <div class="guide-card"><h2>1. Choose a starting point</h2><p>Write in the workspace or select one of the templates in the left pane. The English and Sanskrit versions of conversion examples are separate templates.</p></div>
+    <div class="guide-card"><h2>2. Edit or dictate</h2><p>Use <code>:=</code> for declarations and indentation for blocks. Browser dictation shows words live before placing them in the editor.</p></div>
+    <div class="guide-card"><h2>3. Run and inspect</h2><p>Run code to see output below the editor. Each template starts with a fresh interpreter state so examples work one by one.</p></div>
+  </div>
+</section>
+<section id="project-art" class="scroll-art" aria-label="Project QR code">
+  <div><div class="page-kicker">Explore more</div><h2>Sanskrit Interpreter</h2><p>Project QR code</p></div>
+  <img src="/sanskrit-interpreter.png" alt="Sanskrit Interpreter project QR code" width="170" height="170" loading="lazy">
+</section>
+</main>
+</div>
 <script>
 const $ = id => document.getElementById(id);
 const keywords = new Set('यदि अन्ययदि अन्यथा यावत् प्रत्येक मध्ये कार्य प्रत्यावर्तय विराम अग्रे च वा न स्थापय if elif else while for in def func return break continue pass and or not let'.split(' '));
@@ -139,12 +273,143 @@ function highlight(source) {
   layer.replaceChildren(fragment);
 }
 const source = $('source');
-source.addEventListener('input', () => highlight(source.value));
+const drafts = new Map([['workspace', source.value]]);
+let currentEditorKey = 'workspace';
+let activeExampleId = null;
+let examples = [];
+source.addEventListener('input', () => {
+  highlight(source.value);
+  drafts.set(currentEditorKey, source.value);
+});
 source.addEventListener('scroll', () => {
   $('highlight').scrollTop = source.scrollTop;
   $('highlight').scrollLeft = source.scrollLeft;
 });
 highlight(source.value);
+function exampleHref(example) { return '#example/' + encodeURIComponent(example.id); }
+function addTag(parent, text) {
+  const tag = document.createElement('span');
+  tag.className = 'pill';
+  tag.textContent = text;
+  parent.append(tag);
+}
+function renderCatalog() {
+  const sidebar = $('sidebar-examples');
+  const library = $('library-grid');
+  sidebar.replaceChildren();
+  library.replaceChildren();
+  $('template-count').textContent = examples.length;
+  let lastGroup = '';
+  for (const example of examples) {
+    if (example.group !== lastGroup) {
+      const heading = document.createElement('div');
+      heading.className = 'nav-label';
+      heading.textContent = example.group;
+      sidebar.append(heading);
+      lastGroup = example.group;
+    }
+    const link = document.createElement('a');
+    link.className = 'template-link';
+    link.href = exampleHref(example);
+    link.dataset.exampleId = example.id;
+    link.textContent = example.title;
+    if (example.variant) {
+      const variant = document.createElement('small');
+      variant.textContent = example.variant + ' syntax';
+      link.append(variant);
+    }
+    sidebar.append(link);
+    const card = document.createElement('a');
+    card.className = 'library-card';
+    card.href = exampleHref(example);
+    const title = document.createElement('strong');
+    title.textContent = example.title + (example.variant ? ' · ' + example.variant : '');
+    const description = document.createElement('p');
+    description.textContent = example.description;
+    const action = document.createElement('span');
+    action.textContent = 'Open template →';
+    card.append(title, description, action);
+    library.append(card);
+  }
+}
+function switchEditor(example) {
+  const key = example?.id || 'workspace';
+  if (key !== currentEditorKey) {
+    currentEditorKey = key;
+    source.value = drafts.get(key) ?? example?.source ?? '';
+    source.dispatchEvent(new Event('input', {bubbles: true}));
+    $('output').textContent = example ? 'Run this template to see its output.' : '';
+    $('output').classList.remove('error');
+  }
+  activeExampleId = example?.id || null;
+  $('workspace-kicker').textContent = example ? example.group : 'A spoken code workspace';
+  $('workspace-title').textContent = example ? example.title : 'संस्कृत REPL';
+  $('workspace-description').textContent = example ? example.description : 'Write Sanskrit-inspired code or speak it into the editor. Review the transcript, then run it. Your variables persist between runs.';
+  $('run').textContent = example ? 'Run example' : 'Run code';
+  $('example-meta').hidden = !example;
+  $('example-stepper').hidden = !example;
+  $('example-meta').replaceChildren();
+  if (example) {
+    addTag($('example-meta'), example.group);
+    if (example.variant) addTag($('example-meta'), example.variant + ' syntax');
+    const index = examples.findIndex(item => item.id === example.id);
+    $('example-position').textContent = `${index + 1} of ${examples.length}`;
+    $('previous-example').disabled = index === 0;
+    $('next-example').disabled = index === examples.length - 1;
+    $('previous-example').onclick = () => { location.hash = exampleHref(examples[index - 1]); };
+    $('next-example').onclick = () => { location.hash = exampleHref(examples[index + 1]); };
+  }
+}
+function renderRoute() {
+  let route = location.hash.slice(1) || 'workspace';
+  let example = null;
+  if (route.startsWith('example/')) {
+    try { example = examples.find(item => item.id === decodeURIComponent(route.slice(8))); }
+    catch (_) { example = null; }
+    if (!example) route = 'examples';
+  }
+  const page = example ? 'workspace' : ['workspace', 'examples', 'guide'].includes(route) ? route : 'workspace';
+  if (page === 'workspace') switchEditor(example);
+  document.querySelectorAll('[data-page]').forEach(section => { section.hidden = section.dataset.page !== page; });
+  document.querySelectorAll('[data-nav]').forEach(link => {
+    const selected = link.dataset.nav === page;
+    link.classList.toggle('active', selected);
+    if (selected) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('[data-example-id]').forEach(link => {
+    const selected = link.dataset.exampleId === activeExampleId && page === 'workspace';
+    link.classList.toggle('active', selected);
+    if (selected) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  window.scrollTo({top: 0, behavior: 'auto'});
+}
+window.addEventListener('hashchange', renderRoute);
+if (location.protocol !== 'file:') {
+  fetch('/examples').then(response => {
+    if (!response.ok) throw new Error('Example library unavailable');
+    return response.json();
+  }).then(data => {
+    examples = data.examples.sort((a, b) => (a.group === 'Core examples' ? 0 : 1) - (b.group === 'Core examples' ? 0 : 1) || a.title.localeCompare(b.title) || (a.variant || '').localeCompare(b.variant || ''));
+    renderCatalog();
+    renderRoute();
+  }).catch(() => { $('sidebar-examples').textContent = 'Could not load examples. Restart the server and try again.'; });
+} else {
+  $('sidebar-examples').textContent = 'Start the local server to load examples.';
+}
+renderRoute();
+if ('IntersectionObserver' in window) {
+  const art = $('project-art');
+  art.classList.add('reveal-ready');
+  const observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      art.classList.add('is-visible');
+      observer.disconnect();
+    }
+  }, {threshold: .15});
+  observer.observe(art);
+}
 if (location.protocol === 'file:') {
   $('status').textContent = 'This file is the interface only. Start the interpreter with “Start Sanskrit REPL.command”, then use http://127.0.0.1:8765/.';
   $('output').textContent = 'The interpreter is not running on this file page.';
@@ -165,7 +430,7 @@ async function request(payload) {
     $('output').classList.add('error');
   }
 }
-$('run').onclick = () => request({source:$('source').value});
+$('run').onclick = () => request({source:$('source').value, fresh: !!activeExampleId});
 $('reset').onclick = () => request({reset:true});
 function insertTranscript(transcript) {
   const box = $('source');
@@ -271,19 +536,149 @@ if (location.protocol !== 'file:') {
   }).catch(() => { $('speech-help').textContent = 'Local transcription status is unavailable.'; });
 }
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (!SpeechRecognition) { $('voice').disabled = true; $('status').textContent = 'Browser dictation is unavailable. Local audio transcription may still work.'; }
-else {
+const bars = Array.from({length: 29}, (_, index) => {
+  const bar = document.createElement('span');
+  bar.style.setProperty('--bar-index', index);
+  $('waveform').append(bar);
+  return bar;
+});
+let micStream = null;
+let audioContext = null;
+let waveFrame = null;
+let visualSession = 0;
+function resetWaveform() {
+  if (waveFrame !== null) cancelAnimationFrame(waveFrame);
+  waveFrame = null;
+  if (micStream) micStream.getTracks().forEach(track => track.stop());
+  micStream = null;
+  if (audioContext) audioContext.close().catch(() => {});
+  audioContext = null;
+  $('dictation').dataset.audio = 'false';
+  bars.forEach(bar => { bar.style.height = '4px'; });
+}
+async function showWaveform() {
+  const session = ++visualSession;
+  if (!navigator.mediaDevices?.getUserMedia) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    if (session !== visualSession) { stream.getTracks().forEach(track => track.stop()); return; }
+    const Context = window.AudioContext || window.webkitAudioContext;
+    if (!Context) { stream.getTracks().forEach(track => track.stop()); return; }
+    micStream = stream;
+    audioContext = new Context();
+    audioContext.resume().catch(() => {});
+    $('dictation').dataset.audio = 'true';
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 128;
+    analyser.smoothingTimeConstant = .72;
+    audioContext.createMediaStreamSource(stream).connect(analyser);
+    const values = new Uint8Array(analyser.frequencyBinCount);
+    function draw() {
+      analyser.getByteFrequencyData(values);
+      bars.forEach((bar, index) => {
+        const sample = values[Math.min(values.length - 1, Math.floor(index * .9) + 2)];
+        const height = Math.max(4, Math.min(48, 4 + sample * .34));
+        bar.style.height = height + 'px';
+      });
+      waveFrame = requestAnimationFrame(draw);
+    }
+    draw();
+  } catch (_) {
+    // Speech recognition can still work when a separate audio stream is unavailable.
+  }
+}
+function setDictationState(state, label, description) {
+  $('dictation').dataset.state = state;
+  $('voice-state').textContent = 'Browser dictation · ' + label;
+  $('voice-description').textContent = description;
+  const active = state === 'listening';
+  $('voice').dataset.active = active ? 'true' : 'false';
+  $('voice-icon').textContent = active ? '■' : '🎙';
+  $('voice-label').textContent = active ? 'Stop dictation' : 'Start dictation';
+  $('voice').disabled = state === 'processing' || state === 'unavailable';
+}
+function showSpeechText(finalText, interimText) {
+  const caption = $('speech-caption');
+  caption.replaceChildren();
+  caption.classList.toggle('placeholder', !finalText && !interimText);
+  if (finalText) caption.append(document.createTextNode(finalText));
+  if (interimText) {
+    if (finalText) caption.append(document.createTextNode(' '));
+    const interim = document.createElement('span');
+    interim.className = 'interim';
+    interim.textContent = interimText;
+    caption.append(interim);
+  }
+  if (!finalText && !interimText) caption.textContent = 'Listening for your words…';
+}
+if (!SpeechRecognition || location.protocol === 'file:') {
+  setDictationState('unavailable', 'Unavailable', 'Browser dictation requires a supported browser and the local server.');
+  if (location.protocol !== 'file:') $('status').textContent = 'Browser dictation is unavailable. Local audio transcription may still work.';
+} else {
   const recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  $('voice').onclick = () => { recognition.lang = $('language').value; recognition.start(); $('status').textContent = 'Listening…'; };
-  recognition.onresult = event => {
-    const transcript = event.results[0][0].transcript;
-    insertTranscript(transcript);
-    $('status').textContent = 'Transcript added. Review it, then run.';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  let listening = false;
+  let finalText = '';
+  let interimText = '';
+  let speechError = false;
+  $('voice').onclick = () => {
+    if (listening) {
+      recognition.stop();
+      setDictationState('processing', 'Finishing', 'Adding recognized speech to the editor…');
+      return;
+    }
+    finalText = '';
+    interimText = '';
+    speechError = false;
+    recognition.lang = $('language').value;
+    try {
+      recognition.start();
+      listening = true;
+      setDictationState('listening', 'Listening', 'Speak naturally. Your words appear live on the right.');
+      showSpeechText('', '');
+      $('status').textContent = '';
+      showWaveform();
+    } catch (error) {
+      setDictationState('error', 'Could not start', 'Check microphone access and try again.');
+      $('status').textContent = 'Speech input: ' + error.message;
+    }
   };
-  recognition.onerror = event => { $('status').textContent = 'Speech input: ' + event.error; };
-  recognition.onend = () => { if ($('status').textContent === 'Listening…') $('status').textContent = 'Stopped listening.'; };
+  recognition.onresult = event => {
+    const confirmed = [];
+    const interim = [];
+    for (let index = 0; index < event.results.length; index++) {
+      const result = event.results[index];
+      const text = result[0]?.transcript?.trim();
+      if (!text) continue;
+      (result.isFinal ? confirmed : interim).push(text);
+    }
+    finalText = confirmed.join(' ');
+    interimText = interim.join(' ');
+    showSpeechText(finalText, interimText);
+  };
+  recognition.onerror = event => {
+    speechError = true;
+    setDictationState('error', 'Microphone issue', 'Check microphone access and try again.');
+    $('status').textContent = 'Speech input: ' + event.error;
+  };
+  recognition.onend = () => {
+    listening = false;
+    visualSession++;
+    resetWaveform();
+    const transcript = [finalText, interimText].filter(Boolean).join(' ');
+    if (transcript) {
+      insertTranscript(transcript);
+      setDictationState('done', 'Transcript added', 'Review the text in the editor, then run your code.');
+      $('status').textContent = 'Transcript added. Review it, then run.';
+      showSpeechText(transcript, '');
+    } else if (!speechError) {
+      setDictationState('idle', 'Ready', 'No speech was captured. Try speaking again.');
+      $('status').textContent = 'No speech was recognized.';
+      $('speech-caption').textContent = 'Your live transcript will appear here';
+      $('speech-caption').classList.add('placeholder');
+    }
+  };
 }
 </script>
 </html>

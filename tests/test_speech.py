@@ -65,6 +65,11 @@ class SpeechTests(unittest.TestCase):
         self.assertEqual(codes, [200])
         self.assertFalse(json.loads(handler.wfile.getvalue())["available"])
 
+        handler, codes = self._handler("/healthz")
+        handler.do_GET()
+        self.assertEqual(codes, [200])
+        self.assertEqual(json.loads(handler.wfile.getvalue()), {"ok": True})
+
         handler, codes = self._handler("/transcribe", b"audio", {
             "Content-Length": "5", "Content-Type": "audio/webm",
             "Host": "127.0.0.1:8765", "Origin": "https://example.com",

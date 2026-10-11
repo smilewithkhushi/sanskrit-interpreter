@@ -25,4 +25,4 @@ sanskrit-repl = "sanskrit_repl.__main__:main"
 include = ["sanskrit_repl*"]
 
 [tool.setuptools.package-data]
-sanskrit_repl = ["index.html"]
+sanskrit_repl = ["index.html", "example_catalog.json", "sanskrit-interpreter.png"]

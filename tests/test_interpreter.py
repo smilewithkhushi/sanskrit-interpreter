@@ -93,6 +93,26 @@ class InterpreterTests(unittest.TestCase):
         handler.do_POST()
         self.assertEqual(json.loads(handler.wfile.getvalue())["output"], "6\n")
 
+    def test_browser_accepts_same_host_https_origin(self):
+        from sanskrit_repl.web import Handler
+        handler = Handler.__new__(Handler)
+        body = json.dumps({"source": "मुद्रय(7)"}).encode()
+        handler.path = "/run"
+        handler.headers = {
+            "Content-Length": str(len(body)),
+            "Host": "sanskrit.example",
+            "Origin": "https://sanskrit.example",
+        }
+        handler.rfile = io.BytesIO(body)
+        handler.wfile = io.BytesIO()
+        codes = []
+        handler.send_response = codes.append
+        handler.send_header = lambda key, value: None
+        handler.end_headers = lambda: None
+        handler.do_POST()
+        self.assertEqual(codes, [200])
+        self.assertEqual(json.loads(handler.wfile.getvalue())["output"], "7\n")
+
     def test_browser_sessions_are_isolated(self):
         from sanskrit_repl.web import Handler
         Handler.sessions.clear()

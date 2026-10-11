@@ -20,6 +20,8 @@ From the project root, start the local web server:
 
 The script uses `.venv/bin/python` when available and falls back to `python3`. You can also start the server directly with `python3 -m sanskrit_repl --web`.
 
+The server listens on localhost by default. To accept connections from another host, pass `--host` explicitly.
+
 Open `http://127.0.0.1:8765/` in your browser. Type code and click **Run code**, or click **Dictate** to add speech input. Click **Reset state** to clear saved variables. Stop the server with `Ctrl+C` in the terminal.
 
 To use a different port, run:
@@ -40,6 +42,16 @@ python3 dist/sanskrit-repl.pyz --web
 On macOS, you can also double-click `Start Sanskrit REPL.command` after building. It starts the packaged server and opens the browser page. Do not open `sanskrit_repl/index.html` as a `file://` page; the interface needs the local server.
 
 The source editor highlights Sanskrit and English keywords, built-ins, function names, strings, numbers, comments, and operators as you type. **Browser dictate** uses your browser's speech recognition. The transcript stays editable before execution.
+
+### Deploy on Fly.io
+
+The repository includes a `Dockerfile` and `fly.toml` for the browser interface. Install and sign in to [flyctl](https://fly.io/docs/flyctl/install/), then:
+
+1. Replace `sanskrit-repl-change-me` in `fly.toml` with a globally unique app name. Select your preferred region when Fly asks.
+2. Run `fly launch --no-deploy` from the project root and use the existing `fly.toml` when prompted. Do not provision a database.
+3. Run `fly deploy --ha=false`, then `fly apps open`.
+
+The container listens on port 8080. Fly terminates HTTPS and checks `/healthz`. The default image includes the text REPL; optional server-side `faster-whisper` transcription is not installed. Browser dictation depends on browser support. Session variables live in each Machine's memory and are lost when it stops or redeploys; keeping one Machine avoids routing a session between different instances. Auto-stop is enabled, so the first request after idle may be slower.
 
 To enable the optional local audio-to-text library, install `faster-whisper` and start the server with the same Python environment. On macOS, for example:
 

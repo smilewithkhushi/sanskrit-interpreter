@@ -1,19 +1,49 @@
-"""Small localhost-only browser REPL with optional speech recognition."""
+"""Small browser REPL with optional speech recognition."""
 
 import json
 from collections import OrderedDict
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib.resources import files
+from pathlib import Path
 from secrets import token_urlsafe
 
 from .interpreter import Interpreter, SanskritError
 from .speech import MAX_AUDIO_BYTES, SpeechError, SpeechUnavailable, available, model_name, transcribe_audio
 
 
+def example_catalog():
+    """Return the project examples, or the bundled copy in an installed package."""
+    root = Path(__file__).resolve().parent.parent / "examples"
+    if root.is_dir():
+        examples = []
+        for path in sorted(root.rglob("*.skt")):
+            relative = path.relative_to(root)
+            stem = path.name.removesuffix(".skt")
+            variant = "English" if stem.endswith(".english") else "Sanskrit" if stem.endswith(".sanskrit") else None
+            title = stem.removesuffix(".english").removesuffix(".sanskrit").replace("_", " ").title()
+            source = path.read_text(encoding="utf-8")
+            description = next((line.lstrip("# ").strip() for line in source.splitlines() if line.startswith("#")), "")
+            examples.append({
+                "id": relative.as_posix(),
+                "title": title,
+                "group": "Conversion pairs" if relative.parts[0] == "conversion" else "Core examples",
+                "variant": variant,
+                "description": description,
+                "source": source,
+            })
+        return examples
+    return json.loads(files("sanskrit_repl").joinpath("example_catalog.json").read_text(encoding="utf-8"))
+
+
 class Handler(BaseHTTPRequestHandler):
     sessions = OrderedDict()
     max_sessions = 128
+
+    def _same_origin(self):
+        origin = self.headers.get("Origin")
+        host = self.headers.get("Host")
+        return not origin or (host and origin in (f"http://{host}", f"https://{host}"))
 
     def _session(self):
         cookie = SimpleCookie()
@@ -47,8 +77,22 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        if self.path == "/healthz":
+            self._json_response({"ok": True})
+            return
         if self.path == "/speech/status":
             self._json_response({"available": available(), "model": model_name()})
+            return
+        if self.path == "/examples":
+            self._json_response({"examples": example_catalog()})
+            return
+        if self.path == "/sanskrit-interpreter.png":
+            data = files("sanskrit_repl").joinpath("sanskrit-interpreter.png").read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
             return
         if self.path != "/":
             self.send_error(404)
@@ -69,9 +113,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/run":
             self.send_error(404)
             return
-        origin = self.headers.get("Origin")
-        host = self.headers.get("Host")
-        if origin and origin != f"http://{host}":
+        if not self._same_origin():
             self._json_response({"output": "", "error": "Code must come from this local page"}, 403)
             return
         session_id, engine = self._session()
@@ -90,6 +132,9 @@ class Handler(BaseHTTPRequestHandler):
                 source = request.get("source")
                 if not isinstance(source, str):
                     raise SanskritError("source must be text")
+                if request.get("fresh"):
+                    engine = Interpreter()
+                    self.sessions[session_id] = engine
                 try:
                     response = {"output": engine.execute(source), "error": None}
                 except SanskritError as exc:
@@ -99,9 +144,7 @@ class Handler(BaseHTTPRequestHandler):
         self._json_response(response)
 
     def _transcribe(self):
-        origin = self.headers.get("Origin")
-        host = self.headers.get("Host")
-        if origin and origin != f"http://{host}":
+        if not self._same_origin():
             self._json_response({"text": "", "error": "Audio must come from this local page"}, 403)
             return
         try:
@@ -125,9 +168,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json_response({"text": "", "error": f"Transcription failed: {error}"}, 500)
 
 
-def serve(port=8765):
-    server = HTTPServer(("127.0.0.1", port), Handler)
-    print(f"Open http://127.0.0.1:{port} for text and voice REPL")
+def serve(port=8765, host="127.0.0.1"):
+    server = HTTPServer((host, port), Handler)
+    print(f"Serving Sanskrit REPL on {host}:{port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
