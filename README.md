@@ -99,6 +99,11 @@ python3 -m unittest discover -s tests
 
 Deployment configuration lives in `Dockerfile` and `fly.toml`.
 
+## Contributors
+
+- [@smilewithkhushi](https://github.com/smilewithkhushi) — Khushi
+- [@delta456](https://github.com/delta456) — Swastik
+
 ## License
 
 Licensed under the [MIT License](LICENSE). © 2026 Khushi ([@smilewithkhushi](https://github.com/smilewithkhushi)) and Swastik ([@delta456](https://github.com/delta456)).
