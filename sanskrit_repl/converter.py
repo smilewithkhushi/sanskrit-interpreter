@@ -12,6 +12,11 @@ from .interpreter import normalize
 class ConversionError(ValueError):
     """The input cannot be converted as runnable Sanskrit REPL code."""
 
+    def __init__(self, message: str, line: int | None = None, column: int | None = None):
+        super().__init__(message)
+        self.line = line
+        self.column = column
+
 
 WORDS = {
     "if": "यदि", "elif": "अन्ययदि", "else": "अन्यथा",
@@ -41,7 +46,8 @@ SPOKEN_OPERATORS = {"plus": "जोड़", "minus": "घटा", "times": "ग�
 
 
 def _unsupported(node: ast.AST) -> None:
-    raise ConversionError(f"Unsupported {type(node).__name__} at line {getattr(node, 'lineno', 1)}")
+    line = getattr(node, "lineno", 1)
+    raise ConversionError(f"Unsupported {type(node).__name__} at line {line}", line, getattr(node, "col_offset", 0))
 
 
 def _validate_expression(node: ast.AST) -> None:
@@ -166,6 +172,11 @@ def _validate_statements(statements: list[ast.stmt], *, in_function: bool = Fals
             _unsupported(node)
 
 
+def validate_tree(tree: ast.Module) -> None:
+    """Reject constructs outside the language's executable subset."""
+    _validate_statements(tree.body)
+
+
 def _bound_names(tree: ast.AST) -> set[str]:
     names = {node.id for node in ast.walk(tree) if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)}
     for node in ast.walk(tree):
@@ -182,7 +193,7 @@ def convert_to_sanskrit(source: str) -> str:
         tree = ast.parse(normalize(source), mode="exec")
     except SyntaxError as error:
         raise ConversionError(f"Syntax at line {error.lineno}: {error.msg}") from error
-    _validate_statements(tree.body)
+    validate_tree(tree)
     shadowed = _bound_names(tree)
 
     lines = source.splitlines(keepends=True)

@@ -6,6 +6,8 @@ A small Sanskrit-inspired interpreter with three ways to use it: a terminal REPL
 
 The core interpreter requires Python 3.10+ and no packages. Local audio transcription is optional and has a separate dependency.
 
+For a shell command available from your Python environment, run `python3 -m pip install .` from the project root, then `sanskrit-repl examples/demo.skt` or `sanskrit-repl --web`.
+
 For a single runnable file, use `python3 build.py`. It creates `dist/sanskrit-repl.pyz`. A Python 3 installation is still required; this is a packaged interpreter, not a native machine-code binary.
 
 ### Web interface
@@ -93,6 +95,10 @@ For a spoken-style calculation, enter `गणय दो जोड़ तीन` 
 
 Lists, dictionaries, sets, tuples, indexing, slices, arithmetic, comparisons, functions, loops, and conditionals are supported. The terminal REPL keeps variables between entries; use `:reset` to clear them. Enter a blank line after an indented block. The browser REPL also keeps state until Reset.
 
+See [language rules](docs/language.md) for assignment and function scope, collection behavior, built-in return values, and error reporting.
+
 ## Scope
 
 This is a small interpreted language rather than a complete Sanskrit grammar or a Python/Go compiler. Voice recognition is transcription; review its text before running. Imports, object attributes, classes, file I/O, concurrency, and Python/Go modules are outside this version.
+
+Run the test suite with `python3 -m unittest discover -s tests -v`. The project is released under the [MIT license](LICENSE).

@@ -12,8 +12,8 @@ import unicodedata
 if not (Path(__file__).resolve().parent / "sanskrit_repl").is_dir():
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sanskrit_repl.interpreter import Interpreter, KEYWORDS, normalize
-from sanskrit_repl.converter import ConversionError, convert_to_sanskrit
+from sanskrit_repl.interpreter import Interpreter, KEYWORDS, normalize, source_column
+from sanskrit_repl.converter import ConversionError, convert_to_sanskrit, validate_tree
 
 
 BUILTINS = set(Interpreter()._builtins)
@@ -96,15 +96,31 @@ def word_at(source: str, position: dict) -> str:
 
 
 def diagnostics(source: str) -> list[dict]:
+    normalized = normalize(source)
     try:
-        ast.parse(normalize(source), mode="exec")
+        tree = ast.parse(normalized, mode="exec")
+        validate_tree(tree)
         return []
+    except ConversionError as error:
+        line_number = max(0, (error.line or 1) - 1)
+        column = source_column(source, normalized, error.line or 1, error.column or 0) - 1
+        line = source.splitlines()[line_number] if source.splitlines() else ""
+        return [{
+            "range": {
+                "start": {"line": line_number, "character": utf16_length(line[:column])},
+                "end": {"line": line_number, "character": utf16_length(line[:column + 1])},
+            },
+            "severity": 1,
+            "source": "Sanskrit REPL",
+            "message": str(error),
+        }]
     except SyntaxError as error:
         lines = [line.rstrip("\r") for line in source.split("\n")]
         line_number = min(max((error.lineno or 1) - 1, 0), len(lines) - 1)
         line = lines[line_number]
-        start = utf16_length(line) - utf16_length(line.lstrip())
-        end = max(start + 1, utf16_length(line))
+        column = source_column(source, normalized, error.lineno or 1, max(0, (error.offset or 1) - 1), utf8_bytes=False) - 1
+        start = utf16_length(line[:column])
+        end = max(start + 1, utf16_length(line[:column + 1]))
         return [{
             "range": {
                 "start": {"line": line_number, "character": start},

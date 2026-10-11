@@ -2,7 +2,7 @@
 
 Syntax highlighting for the project's `.skt` and `.sanskrit` files. It colors Devanagari and English keywords, function declarations, built-ins, numbers, strings, comments, and Go-style `:=` assignments. It also configures `#` comment toggling, bracket pairs, and indentation after `:`.
 
-The bundled Python language server adds syntax error diagnostics, keyword and built-in completions, completion for functions declared in the current file, and hover help. It parses source without executing it. Python 3.10+ must be available as `python3`, or set `sanskritRepl.pythonPath` to your Python executable.
+The bundled Python language server adds syntax and unsupported-construct diagnostics, keyword and built-in completions, completion for functions declared in the current file, and hover help. It parses source without executing it. Python 3.10+ must be available as `python3`, or set `sanskritRepl.pythonPath` to your Python executable.
 
 Use **Sanskrit REPL: Convert English Syntax to Sanskrit** from the Command Palette while a `.skt` or `.sanskrit` file is open. The converted code opens beside the source as an unsaved preview. Strings, comments, spacing, and user-defined names are preserved. Unsupported syntax produces a message instead of a partial conversion.
 

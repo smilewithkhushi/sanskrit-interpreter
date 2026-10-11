@@ -68,6 +68,15 @@ class LanguageServerTests(unittest.TestCase):
             self.assertEqual(len(diagnostics), 1)
             self.assertEqual(diagnostics[0]["range"]["start"]["line"], 0)
 
+            send({"jsonrpc": "2.0", "method": "textDocument/didChange", "params": {
+                "textDocument": {"uri": uri, "version": 3},
+                "contentChanges": [{"text": "मुद्रय(2)\nimport os\n"}],
+            }})
+            diagnostics = receive()["params"]["diagnostics"]
+            self.assertEqual(len(diagnostics), 1)
+            self.assertIn("Unsupported Import", diagnostics[0]["message"])
+            self.assertEqual(diagnostics[0]["range"]["start"], {"line": 1, "character": 0})
+
             send({"jsonrpc": "2.0", "method": "textDocument/didClose", "params": {
                 "textDocument": {"uri": uri},
             }})

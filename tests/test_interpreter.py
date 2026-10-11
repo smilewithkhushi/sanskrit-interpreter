@@ -36,6 +36,49 @@ class InterpreterTests(unittest.TestCase):
         with self.assertRaisesRegex(SanskritError, "Execution limit"):
             Interpreter(max_steps=100).execute("यावत् सत्यम्:\n    pass")
 
+    def test_errors_point_to_original_source(self):
+        for source, expected in [
+            ("यदि सत्यम्:\n    मुद्रय(गुप्त)", "Unknown name: गुप्त at line 2, column 12"),
+            ("x := 3\nमुद्रय(x / 0)", "ZeroDivisionError: division by zero at line 2, column 8"),
+            ("import os", "Unsupported Import at line 1, column 1"),
+            ("मुद्रय(१)", "at line 1, column 8"),
+        ]:
+            with self.subTest(source=source), self.assertRaises(SanskritError) as error:
+                Interpreter().execute(source)
+            self.assertIn(expected, str(error.exception))
+
+    def test_recursion_scope_unicode_names_and_loops(self):
+        source = (
+            "मूल := 3\n"
+            "कार्य तथ्य(n):\n"
+            "    यदि n <= 1:\n"
+            "        प्रत्यावर्तय 1\n"
+            "    प्रत्यावर्तय n * तथ्य(n - 1)\n"
+            "कार्य छाया():\n"
+            "    मूल := 9\n"
+            "    प्रत्यावर्तय मूल\n"
+            "योगफल := 0\n"
+            "प्रत्येक संख्या मध्ये परास(5):\n"
+            "    यदि संख्या == 3:\n"
+            "        विराम\n"
+            "    योगफल += संख्या\n"
+            "अन्यथा:\n"
+            "    योगफल := 99\n"
+            "मुद्रय(तथ्य(5), छाया(), मूल, योगफल)\n"
+        )
+        self.assertEqual(Interpreter().execute(source), "120 9 3 3\n")
+
+    def test_collection_builtins_and_partial_state_after_error(self):
+        engine = Interpreter()
+        self.assertEqual(engine.execute(
+            'items := [1, 2]\nnew_items := जोड़ो(items, 3)\n'
+            'other := बनाओ("सूची", 2)\ncount := प्रतिलिपि(other, new_items)\n'
+            'मुद्रय(items, new_items, other, count, क्षमता(other))'
+        ), "[1, 2] [1, 2, 3] [1, 2] 2 2\n")
+        with self.assertRaises(SanskritError):
+            engine.execute("saved := 42\nमुद्रय(missing)")
+        self.assertEqual(engine.execute("मुद्रय(saved)"), "42\n")
+
     def test_browser_endpoint_without_socket(self):
         from sanskrit_repl.web import Handler
         handler = Handler.__new__(Handler)
@@ -49,6 +92,36 @@ class InterpreterTests(unittest.TestCase):
         handler.end_headers = lambda: None
         handler.do_POST()
         self.assertEqual(json.loads(handler.wfile.getvalue())["output"], "6\n")
+
+    def test_browser_sessions_are_isolated(self):
+        from sanskrit_repl.web import Handler
+        Handler.sessions.clear()
+
+        def request(payload, cookie=None):
+            handler = Handler.__new__(Handler)
+            body = json.dumps(payload).encode()
+            handler.path = "/run"
+            handler.headers = {"Content-Length": str(len(body))}
+            if cookie:
+                handler.headers["Cookie"] = cookie
+            handler.rfile = io.BytesIO(body)
+            handler.wfile = io.BytesIO()
+            headers = {}
+            handler.send_response = lambda code: None
+            handler.send_header = lambda key, value: headers.__setitem__(key, value)
+            handler.end_headers = lambda: None
+            handler.do_POST()
+            result = json.loads(handler.wfile.getvalue())
+            return result, headers.get("Set-Cookie", "").split(";", 1)[0]
+
+        first, cookie_a = request({"source": "x := 7"})
+        self.assertIsNone(first["error"])
+        second, cookie_b = request({"source": "मुद्रय(x)"})
+        self.assertIn("Unknown name", second["error"])
+        self.assertNotEqual(cookie_a, cookie_b)
+        self.assertEqual(request({"source": "मुद्रय(x)"}, cookie_a)[0]["output"], "7\n")
+        request({"reset": True}, cookie_a)
+        self.assertIn("Unknown name", request({"source": "मुद्रय(x)"}, cookie_a)[0]["error"])
 
 
 if __name__ == "__main__":

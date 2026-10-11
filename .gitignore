@@ -14,5 +14,8 @@ node_modules/
 
 # Packaged interpreter
 dist/
+build/
+*.egg-info/
 
 /self/*
+!/self/progress.md

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import difflib
 import math
 import operator
 import re
@@ -11,7 +12,35 @@ from dataclasses import dataclass
 
 
 class SanskritError(Exception):
-    pass
+    def __init__(self, message: str, line: int | None = None, column: int | None = None):
+        super().__init__(message)
+        self.message = message
+        self.line = line
+        self.column = column
+
+    def __str__(self):
+        if self.line is None:
+            return self.message
+        position = f"line {self.line}"
+        if self.column is not None:
+            position += f", column {self.column}"
+        return f"{self.message} at {position}"
+
+
+def source_column(source: str, normalized: str, line: int, column: int, *, utf8_bytes: bool = True) -> int:
+    """Map a parsed column back to the user's original line."""
+    original_lines = source.splitlines()
+    parsed_lines = normalized.splitlines()
+    if not 1 <= line <= min(len(original_lines), len(parsed_lines)):
+        return 1
+    original = original_lines[line - 1]
+    parsed = parsed_lines[line - 1]
+    parsed_column = len(parsed.encode("utf-8")[:column].decode("utf-8", "ignore")) if utf8_bytes else column
+    for tag, start, end, original_start, original_end in difflib.SequenceMatcher(
+            None, parsed, original, autojunk=False).get_opcodes():
+        if start <= parsed_column < end:
+            return 1 + (original_start + parsed_column - start if tag == "equal" else original_start)
+    return len(original) + 1
 
 
 KEYWORDS = {
@@ -212,6 +241,16 @@ class Interpreter:
             raise SanskritError("Invalid assignment target")
 
     def _eval(self, node):
+        try:
+            return self._eval_node(node)
+        except SanskritError as exc:
+            if exc.line is None:
+                exc.line, exc.column = node.lineno, node.col_offset
+            raise
+        except (TypeError, ValueError, IndexError, KeyError, ZeroDivisionError, OverflowError, RecursionError) as exc:
+            raise SanskritError(f"{type(exc).__name__}: {exc}", node.lineno, node.col_offset) from exc
+
+    def _eval_node(self, node):
         self._tick(node)
         if isinstance(node, ast.Constant):
             return node.value
@@ -323,6 +362,16 @@ class Interpreter:
             self._stmt(node)
 
     def _stmt(self, node):
+        try:
+            return self._stmt_node(node)
+        except SanskritError as exc:
+            if exc.line is None:
+                exc.line, exc.column = node.lineno, node.col_offset
+            raise
+        except (TypeError, ValueError, IndexError, KeyError, ZeroDivisionError, OverflowError, RecursionError) as exc:
+            raise SanskritError(f"{type(exc).__name__}: {exc}", node.lineno, node.col_offset) from exc
+
+    def _stmt_node(self, node):
         self._tick(node)
         if isinstance(node, ast.Expr):
             return self._eval(node.value)
@@ -388,18 +437,27 @@ class Interpreter:
     def execute(self, source: str) -> str:
         self.output = []
         self.steps = 0
+        normalized = normalize(source)
         try:
-            tree = ast.parse(normalize(source), mode="exec")
+            tree = ast.parse(normalized, mode="exec")
+            from .converter import ConversionError, validate_tree
+            try:
+                validate_tree(tree)
+            except ConversionError as exc:
+                raise SanskritError(str(exc).split(" at line ")[0], exc.line, exc.column) from exc
             result = None
             for node in tree.body:
                 result = self._stmt(node)
             if result is not None:
                 self.output.append(repr(result) + "\n")
             return "".join(self.output)
-        except SanskritError:
+        except SanskritError as exc:
+            if exc.line is not None and exc.column is not None:
+                exc.column = source_column(source, normalized, exc.line, exc.column)
             raise
         except SyntaxError as exc:
-            raise SanskritError(f"Syntax at line {exc.lineno}: {exc.msg}") from exc
+            column = source_column(source, normalized, exc.lineno or 1, max(0, (exc.offset or 1) - 1), utf8_bytes=False)
+            raise SanskritError(f"Syntax: {exc.msg}", exc.lineno, column) from exc
         except (_Break, _Continue) as exc:
             raise SanskritError("विराम/अग्रे is only valid inside a loop") from exc
         except (TypeError, ValueError, IndexError, KeyError, ZeroDivisionError, OverflowError, RecursionError) as exc:
